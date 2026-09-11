@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Striker FC — Plateforme de gestion d'équipe
 
-## Getting Started
+Application web de gestion complète d'un club de football : joueurs, cotisations
+hebdomadaires et exceptionnelles, dépenses, entraînements, matchs, convocations et
+matériel.
 
-First, run the development server:
+## Stack
+
+- Next.js 14 (App Router) + React 18 + TypeScript
+- Tailwind CSS 3 (palette club : bleu ciel, blanc, vert, bleu marine)
+- Supabase (Auth, PostgreSQL, RLS) via `@supabase/ssr`
+- `html-to-image` pour la génération des visuels PNG
+- `lucide-react` pour les icônes, `date-fns` pour les dates
+
+## Démarrage
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # build de production
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Variables d'environnement
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Renseignées dans `.env.local` (voir `.env.example`) :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Rôle |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique (client navigateur) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clé serveur (opérations privilégiées) |
+| `NEXT_PUBLIC_APP_URL` | URL publique de l'application |
 
-## Learn More
+## Base de données
 
-To learn more about Next.js, take a look at the following resources:
+1. Ouvrir le **SQL Editor** du tableau de bord Supabase.
+2. Exécuter `supabase/schema.sql` : types, tables, vues, fonctions, triggers et
+   politiques RLS.
+3. Facultatif : exécuter `supabase/seed.sql` pour un inventaire de départ.
+4. Dans **Authentication > Providers**, activer l'authentification par e-mail.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+À l'inscription, un trigger crée automatiquement le profil (rôle `JOUEUR`) et la
+fiche joueur associée.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Rôles
 
-## Deploy on Vercel
+`PRESIDENT_HONNEUR`, `PRESIDENT`, `VICE_PRESIDENT`, `COACH`, `ARBITRE`, `TG`,
+`JOUEUR`. Les permissions sont centralisées dans `src/lib/permissions.ts` et
+appliquées côté base par les politiques RLS (`can_manage_team()`,
+`can_manage_finance()`, `can_manage_sport()`, `can_create_contribution()`).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Logique de cotisation hebdomadaire
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Chaque semaine ISO est matérialisée dans `weekly_weeks` (l'historique est donc
+conservé même sans paiement). Le TG ne saisit que les **payeurs** ; la vue
+`v_weekly_debts` calcule automatiquement, pour chaque joueur, le nombre de
+semaines non payées et la dette cumulée (100 FCFA par semaine). Un joueur actif
+sans ligne dans `weekly_payments` pour une semaine est donc automatiquement
+considéré comme non payeur.
+
+## Structure
+
+```
+src/
+├── app/
+│   ├── (auth)/            # connexion, inscription
+│   ├── (dashboard)/       # dashboard, cotisations, dépenses, joueurs, matchs…
+│   ├── layout.tsx
+│   └── page.tsx           # landing page publique
+├── components/
+│   ├── auth/  dashboard/  finance/  landing/  layout/  sport/  ui/
+├── lib/
+│   ├── actions/           # Server Actions (finances, sport)
+│   ├── supabase/          # clients browser / server / admin + types
+│   ├── auth.ts  permissions.ts  dates.ts  format.ts  constants.ts  png.ts
+├── types/
+└── hooks/
+supabase/
+├── schema.sql             # schéma complet (tables, vues, RLS)
+└── seed.sql
+```
+
+## Visuels PNG
+
+Les rapports de cotisation et les convocations sont générés côté client :
+un composant caché (hors écran) est capturé par `html-to-image`, puis téléchargé
+en PNG, prêt à être partagé sur WhatsApp.
