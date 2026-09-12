@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import {
   CalendarDays,
@@ -25,7 +26,7 @@ export const metadata: Metadata = { title: "Tableau de bord" };
 
 export default async function DashboardPage() {
   const user = await getSessionUser();
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   const supabase = createClient();
   const nextTraining = getNextTraining();

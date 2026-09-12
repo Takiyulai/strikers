@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -19,7 +19,7 @@ export default async function MatchDetailPage({
   params: { id: string };
 }) {
   const user = await getSessionUser();
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   const supabase = createClient();
   const canManage = hasPermission(user.role, "sport.manage");

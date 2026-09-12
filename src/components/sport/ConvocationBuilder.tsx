@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Download } from "lucide-react";
+import { Download, Eye } from "lucide-react";
 
 import { saveConvocation } from "@/lib/actions/sport";
 import { cn } from "@/lib/cn";
-import { downloadNodeAsPng } from "@/lib/png";
+import { downloadNodeAsPng, openNodePngInNewTab } from "@/lib/png";
 
 import { Button } from "@/components/ui/Button";
 import { ConvocationCard } from "@/components/sport/ConvocationCard";
@@ -74,6 +74,7 @@ export function ConvocationBuilder({
   );
   const [saved, setSaved] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
   const [cardNode, setCardNode] = useState<HTMLDivElement | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -101,14 +102,19 @@ export function ConvocationBuilder({
     if (!cardNode) return;
     setDownloading(true);
     try {
-      await downloadNodeAsPng(
-        cardNode,
-        `convocation-striker-fc-${opponent
-          .replace(/\s+/g, "-")
-          .toLowerCase()}.png`,
-      );
+      await downloadNodeAsPng(cardNode, `convocation-striker-fc-${opponent}`);
     } finally {
       setDownloading(false);
+    }
+  }
+
+  async function handlePreview() {
+    if (!cardNode) return;
+    setPreviewing(true);
+    try {
+      await openNodePngInNewTab(cardNode);
+    } finally {
+      setPreviewing(false);
     }
   }
 
@@ -125,6 +131,14 @@ export function ConvocationBuilder({
         >
           <Download className="h-4 w-4" />
           Télécharger le visuel PNG
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={handlePreview}
+          loading={previewing}
+        >
+          <Eye className="h-4 w-4" />
+          Aperçu
         </Button>
         {saved ? (
           <span className="self-center text-sm font-medium text-club-green-600">

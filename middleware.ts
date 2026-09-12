@@ -2,12 +2,25 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { updateSession } from "@/lib/supabase/middleware";
 
-const PUBLIC_ROUTES = ["/", "/login", "/register"];
+const PUBLIC_ROUTES = [
+  "/",
+  "/login",
+  "/register",
+  "/mot-de-passe-oublie",
+  "/reinitialisation",
+];
 const AUTH_ROUTES = ["/login", "/register"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const { user, response } = await updateSession(request);
+  const { user, response, supabase } = await updateSession(request);
+
+  // Lien de réinitialisation : échange du code de vérification contre une
+  // session de récupération avant d'accéder à /reinitialisation.
+  const code = request.nextUrl.searchParams.get("code");
+  if (code) {
+    await supabase.auth.exchangeCodeForSession(code);
+  }
 
   const isPublic = PUBLIC_ROUTES.includes(pathname);
   const isAuthRoute = AUTH_ROUTES.includes(pathname);

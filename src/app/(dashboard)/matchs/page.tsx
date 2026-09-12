@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ChevronRight } from "lucide-react";
@@ -17,7 +18,7 @@ export const metadata: Metadata = { title: "Matchs" };
 
 export default async function MatchsPage() {
   const user = await getSessionUser();
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   const canManage = hasPermission(user.role, "sport.manage");
   const supabase = createClient();

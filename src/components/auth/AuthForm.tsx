@@ -30,7 +30,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
 
     try {
       if (isRegister) {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -38,6 +38,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           },
         });
         if (signUpError) throw signUpError;
+
+        // Confirmation par e-mail active : Supabase ne renvoie pas de session
+        // et l'utilisateur doit se connecter après avoir validé son adresse.
+        if (!data.session) {
+          router.push("/login?registered=1");
+          return;
+        }
       } else {
         const { error: signInError } =
           await supabase.auth.signInWithPassword({ email, password });
@@ -60,6 +67,12 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {!isRegister && searchParams.get("registered") === "1" ? (
+        <p className="rounded-xl bg-club-green-50 px-3 py-2 text-sm text-club-green-700">
+          Compte créé avec succès ! Connectez-vous avec vos identifiants.
+        </p>
+      ) : null}
+
       {isRegister ? (
         <>
           <Input
@@ -114,6 +127,17 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         {isRegister ? "Créer mon compte" : "Se connecter"}
       </Button>
 
+      {!isRegister ? (
+        <p className="text-center">
+          <Link
+            href="/mot-de-passe-oublie"
+            className="text-sm font-medium text-club-sky-600 hover:underline"
+          >
+            Mot de passe oublié ?
+          </Link>
+        </p>
+      ) : null}
+
       <p className="text-center text-sm text-slate-500">
         {isRegister ? (
           <>
@@ -138,6 +162,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
 function translateAuthError(message: string): string {
   if (message.includes("Invalid login credentials")) {
     return "E-mail ou mot de passe incorrect.";
+  }
+  if (message.includes("Email not confirmed")) {
+    return "Veuillez d'abord confirmer votre adresse e-mail.";
   }
   if (message.includes("already registered")) {
     return "Cette adresse e-mail est déjà utilisée.";

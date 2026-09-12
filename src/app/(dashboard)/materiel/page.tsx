@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 import { getSessionUser } from "@/lib/auth";
@@ -31,7 +32,7 @@ export const metadata: Metadata = { title: "Matériel" };
 
 export default async function MaterielPage() {
   const user = await getSessionUser();
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   const canManage = hasPermission(user.role, "equipment.manage");
   const supabase = createClient();

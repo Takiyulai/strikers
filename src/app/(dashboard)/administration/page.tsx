@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Administration" };
 
 export default async function AdministrationPage() {
   const user = await getSessionUser();
-  if (!user) return null;
+  if (!user) redirect("/login");
   if (!hasPermission(user.role, "roles.manage")) redirect("/dashboard");
 
   const supabase = createClient();

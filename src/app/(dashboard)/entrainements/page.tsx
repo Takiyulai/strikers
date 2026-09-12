@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 import { getSessionUser } from "@/lib/auth";
@@ -17,7 +18,7 @@ export const metadata: Metadata = { title: "Entraînements" };
 
 export default async function EntrainementsPage() {
   const user = await getSessionUser();
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   const canManage = hasPermission(user.role, "sport.manage");
   const supabase = createClient();

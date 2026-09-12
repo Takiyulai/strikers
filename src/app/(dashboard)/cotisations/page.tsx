@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 import { getSessionUser } from "@/lib/auth";
@@ -18,7 +19,7 @@ export const metadata: Metadata = { title: "Cotisations hebdomadaires" };
 
 export default async function CotisationsPage() {
   const user = await getSessionUser();
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   const canManage = hasPermission(user.role, "finance.manage");
   const supabase = createClient();
