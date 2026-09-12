@@ -24,7 +24,7 @@ import {
   SPECIAL_AMOUNTS,
   SPECIAL_CONTRIBUTION_STATUS_LABELS,
 } from "@/lib/constants";
-import { formatDate } from "@/lib/dates";
+import { formatDate, formatDateTime } from "@/lib/dates";
 import { formatFcfa } from "@/lib/format";
 import { downloadNodeAsPng, openNodePngInNewTab } from "@/lib/png";
 
@@ -101,19 +101,26 @@ export function SpecialContributionsManager({
   ) {
     if (!canRecord) return;
     setError(null);
-    let next = false;
+    const item = items.find(
+      (candidate) => candidate.contribution.id === contributionId,
+    );
+    if (!item) return;
+    // Le sens du toggle est calculé AVANT la mise à jour optimiste : les
+    // updaters React ne s'exécutent qu'au rendu, trop tard pour l'action
+    // serveur — sinon on supprime au lieu d'enregistrer.
+    const next = !item.paidPlayerIds.includes(playerId);
     setItems((prev) =>
-      prev.map((item) => {
-        if (item.contribution.id !== contributionId) return item;
-        const has = item.paidPlayerIds.includes(playerId);
-        next = !has;
+      prev.map((candidate) => {
+        if (candidate.contribution.id !== contributionId) return candidate;
         return {
-          ...item,
+          ...candidate,
           paidPlayerIds: next
-            ? [...item.paidPlayerIds, playerId]
-            : item.paidPlayerIds.filter((id) => id !== playerId),
-          paidCount: next ? item.paidCount + 1 : item.paidCount - 1,
-          collected: next ? item.collected + amount : item.collected - amount,
+            ? [...candidate.paidPlayerIds, playerId]
+            : candidate.paidPlayerIds.filter((id) => id !== playerId),
+          paidCount: next ? candidate.paidCount + 1 : candidate.paidCount - 1,
+          collected: next
+            ? candidate.collected + amount
+            : candidate.collected - amount,
         };
       }),
     );
@@ -123,6 +130,9 @@ export function SpecialContributionsManager({
         : await removeSpecialPayment(contributionId, playerId);
       if (!result.ok) {
         setError(result.error);
+        router.refresh();
+      } else {
+        // Rafraîchit pour afficher le membre du staff ayant enregistré.
         router.refresh();
       }
     });
@@ -523,6 +533,9 @@ export function SpecialContributionsManager({
                           const hasPaid = item.paidPlayerIds.includes(
                             row.playerId,
                           );
+                          const paymentInfo = item.payments.find(
+                            (payment) => payment.playerId === row.playerId,
+                          );
                           return (
                             <button
                               key={row.playerId}
@@ -536,18 +549,29 @@ export function SpecialContributionsManager({
                                 )
                               }
                               className={cn(
-                                "flex items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-left transition-colors",
+                                "flex items-start justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-left transition-colors",
                                 hasPaid
                                   ? "border-club-green-200 bg-club-green-50"
                                   : "border-slate-200 bg-white hover:bg-slate-50",
                                 !canRecord && "cursor-default",
                               )}
                             >
-                              <span className="min-w-0 truncate text-sm font-medium text-club-navy-900">
-                                {row.jerseyNumber
-                                  ? `${row.jerseyNumber}. `
-                                  : ""}
-                                {row.fullName}
+                              <span className="min-w-0">
+                                <span className="block truncate text-sm font-medium text-club-navy-900">
+                                  {row.jerseyNumber
+                                    ? `${row.jerseyNumber}. `
+                                    : ""}
+                                  {row.fullName}
+                                </span>
+                                {hasPaid ? (
+                                  <span className="block text-[11px] text-club-green-600">
+                                    Par{" "}
+                                    {paymentInfo?.recordedByName ??
+                                      "un membre du staff"}{" "}
+                                    ·{" "}
+                                    {formatDateTime(paymentInfo?.paidAt ?? "")}
+                                  </span>
+                                ) : null}
                               </span>
                               <Badge tone={hasPaid ? "green" : "neutral"}>
                                 {hasPaid ? "Payé" : "Non payé"}

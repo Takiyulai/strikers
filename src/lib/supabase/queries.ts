@@ -176,14 +176,15 @@ export async function fetchWeeklyRoster(
 ): Promise<WeeklyRosterRow[]> {
   const players = await fetchPlayers(supabase, { onlyActive: true });
 
-  const [{ data: payments }, { data: debts }, { data: paidTotals }] =
+  const [{ data: payments }, { data: debts }, { data: paidTotals }, { data: profiles }] =
     await Promise.all([
       supabase
         .from("weekly_payments")
-        .select("player_id")
+        .select("player_id, recorded_by")
         .eq("week_id", weekId),
       supabase.from("v_weekly_debts").select("player_id, debt_fcfa"),
       supabase.from("v_weekly_paid").select("player_id, total_paid"),
+      supabase.from("profiles").select("id, full_name"),
     ]);
 
   const paidSet = new Set((payments ?? []).map((p) => p.player_id));
@@ -191,16 +192,25 @@ export async function fetchWeeklyRoster(
   const totalPaidMap = new Map(
     (paidTotals ?? []).map((p) => [p.player_id, p.total_paid]),
   );
+  const namesById = new Map(
+    (profiles ?? []).map((profile) => [profile.id, profile.full_name]),
+  );
 
-  return players.map((player) => ({
-    playerId: player.id,
-    fullName: player.full_name,
-    jerseyNumber: player.jersey_number,
-    position: player.position,
-    hasPaid: paidSet.has(player.id),
-    debtFcfa: debtMap.get(player.id) ?? 0,
-    totalPaid: totalPaidMap.get(player.id) ?? 0,
-  }));
+  return players.map((player) => {
+    const payment = (payments ?? []).find((p) => p.player_id === player.id);
+    return {
+      playerId: player.id,
+      fullName: player.full_name,
+      jerseyNumber: player.jersey_number,
+      position: player.position,
+      hasPaid: paidSet.has(player.id),
+      debtFcfa: debtMap.get(player.id) ?? 0,
+      totalPaid: totalPaidMap.get(player.id) ?? 0,
+      paidRecordedBy: payment?.recorded_by
+        ? namesById.get(payment.recorded_by) ?? null
+        : null,
+    };
+  });
 }
 
 /** Prochains entraînements. */
@@ -236,23 +246,31 @@ export async function fetchUpcomingMatches(
   return (data ?? []) as Match[];
 }
 
-/** Cotisations exceptionnelles enrichies de leurs paiements. */
+/** Cotisations exceptionnelles enrichies de leurs paiements (traçables). */
 export async function fetchSpecialContributions(
   supabase: SupabaseLike,
 ): Promise<SpecialContributionWithStats[]> {
-  const [{ data: contributions }, { data: payments }, roster] =
-    await Promise.all([
-      supabase
-        .from("special_contributions")
-        .select("*")
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("special_contribution_payments")
-        .select("contribution_id, player_id, amount, paid_at"),
-      fetchPlayers(supabase, { onlyActive: true }),
-    ]);
+  const [
+    { data: contributions },
+    { data: payments },
+    roster,
+    { data: profiles },
+  ] = await Promise.all([
+    supabase
+      .from("special_contributions")
+      .select("*")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("special_contribution_payments")
+      .select("contribution_id, player_id, amount, paid_at, recorded_by"),
+    fetchPlayers(supabase, { onlyActive: true }),
+    supabase.from("profiles").select("id, full_name"),
+  ]);
 
   const expectedCount = roster.length;
+  const namesById = new Map(
+    (profiles ?? []).map((profile) => [profile.id, profile.full_name]),
+  );
 
   return (contributions ?? []).map((contribution) => {
     const rows = (payments ?? []).filter(
@@ -264,6 +282,14 @@ export async function fetchSpecialContributions(
       paidCount: rows.length,
       expectedCount,
       paidPlayerIds: rows.map((payment) => payment.player_id),
+      payments: rows.map((payment) => ({
+        playerId: payment.player_id,
+        amount: payment.amount,
+        paidAt: payment.paid_at,
+        recordedByName: payment.recorded_by
+          ? namesById.get(payment.recorded_by) ?? null
+          : null,
+      })),
     };
   });
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { UserPlus } from "lucide-react";
 
@@ -72,8 +73,11 @@ export function PlayerCreateButton() {
         Ajouter un joueur
       </Button>
 
-      {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Modale rendue via un portail : elle est passée dans le header du
+          shell (backdrop-blur), qui confine sinon ses descendants `fixed`. */}
+      {open
+        ? createPortal(
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-club-navy-950/50"
             onClick={handleClose}
@@ -188,8 +192,10 @@ export function PlayerCreateButton() {
               </>
             )}
           </div>
-        </div>
-      ) : null}
+        </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }

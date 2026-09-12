@@ -13,6 +13,30 @@ interface Row {
   role: ConvocationRole;
 }
 
+function PlayerLine({
+  jersey,
+  name,
+  chipClass,
+}: {
+  jersey: number | null;
+  name: string;
+  chipClass: string;
+}) {
+  return (
+    <li className="flex items-center gap-2.5 border-b border-white/10 pb-1.5 text-[15px] text-white/90">
+      <span
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${chipClass}`}
+      >
+        {jersey ?? "–"}
+      </span>
+      <span className="font-medium">{name}</span>
+    </li>
+  );
+}
+
+/**
+ * Format portrait 480 px : lisible sur téléphone et dans WhatsApp.
+ */
 export const ConvocationCard = forwardRef<
   HTMLDivElement,
   {
@@ -26,100 +50,97 @@ export const ConvocationCard = forwardRef<
   { opponent, matchDate, matchTime, location, rows },
   ref,
 ) {
-  const titulaires = rows.filter((r) => r.role === "TITULAIRE");
-  const remplacants = rows.filter((r) => r.role === "REMPLACANT");
-  const absents = rows.filter((r) => r.role === "ABSENT");
+  const titulaires = rows.filter((row) => row.role === "TITULAIRE");
+  const remplacants = rows.filter((row) => row.role === "REMPLACANT");
+  const absents = rows.filter((row) => row.role === "ABSENT");
 
   return (
     <div
       ref={ref}
-      style={{ width: 720 }}
-      className="bg-club-navy-950 p-8 font-sans text-white"
+      style={{ width: 480 }}
+      className="bg-club-navy-950 p-6 font-sans text-white"
     >
-      <div className="flex items-center justify-between border-b border-white/20 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-club-sky-500 text-xl font-black">
-            S
-          </div>
-          <div>
-            <p className="text-xl font-black uppercase tracking-wide">
-              Striker FC
-            </p>
-            <p className="text-xs font-medium uppercase tracking-widest text-club-sky-300">
-              Convocation officielle
-            </p>
-          </div>
+      <div className="flex items-center gap-2.5 border-b border-white/15 pb-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-club-sky-500 text-lg font-black">
+          S
         </div>
-        <div className="text-right">
-          <p className="text-lg font-bold">Striker FC — {opponent}</p>
-          <p className="text-sm text-white/70">
-            {formatDate(matchDate)}
-            {matchTime ? ` · ${matchTime}` : ""}
+        <div>
+          <p className="text-lg font-black uppercase leading-tight tracking-wide">
+            Striker FC
           </p>
-          {location ? <p className="text-sm text-white/70">{location}</p> : null}
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-club-sky-300">
+            Convocation officielle
+          </p>
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-6">
-        <div>
-          <p className="mb-2 text-sm font-bold uppercase tracking-wide text-club-green-400">
-            Titulaires ({titulaires.length})
-          </p>
-          <ul className="space-y-1.5">
-            {titulaires.map((r) => (
-              <li
-                key={r.playerId}
-                className="flex items-center gap-2 text-sm text-white/90"
-              >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-club-green-600 text-[11px] font-bold">
-                  {r.jerseyNumber ?? "–"}
-                </span>
-                {r.fullName}
-              </li>
-            ))}
-            {titulaires.length === 0 ? (
-              <li className="text-sm text-white/40">À définir</li>
-            ) : null}
-          </ul>
-        </div>
-
-        <div>
-          <p className="mb-2 text-sm font-bold uppercase tracking-wide text-club-sky-300">
-            Remplaçants ({remplacants.length})
-          </p>
-          <ul className="space-y-1.5">
-            {remplacants.map((r) => (
-              <li
-                key={r.playerId}
-                className="flex items-center gap-2 text-sm text-white/90"
-              >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-club-sky-600 text-[11px] font-bold">
-                  {r.jerseyNumber ?? "–"}
-                </span>
-                {r.fullName}
-              </li>
-            ))}
-            {remplacants.length === 0 ? (
-              <li className="text-sm text-white/40">À définir</li>
-            ) : null}
-          </ul>
-
-          {absents.length > 0 ? (
-            <>
-              <p className="mb-2 mt-4 text-sm font-bold uppercase tracking-wide text-amber-400">
-                Absents ({absents.length})
-              </p>
-              <ul className="space-y-1 text-sm text-white/60">
-                {absents.map((r) => (
-                  <li key={r.playerId}>{r.fullName}</li>
-                ))}
-              </ul>
-            </>
-          ) : null}
-        </div>
+      <div className="mt-4">
+        <p className="text-xl font-black leading-tight">
+          Striker FC — {opponent}
+        </p>
+        <p className="mt-1 text-[13px] font-semibold text-club-sky-300">
+          {formatDate(matchDate)}
+          {matchTime ? ` · ${matchTime.slice(0, 5)}` : ""}
+        </p>
+        {location ? (
+          <p className="text-[12px] text-white/60">{location}</p>
+        ) : null}
       </div>
 
-      <p className="mt-8 border-t border-white/20 pt-3 text-center text-xs text-white/50">
+      <div className="mt-5">
+        <p className="text-[12px] font-bold uppercase tracking-wide text-club-green-400">
+          Titulaires ({titulaires.length})
+        </p>
+        <ul className="mt-2 space-y-1.5">
+          {titulaires.length === 0 ? (
+            <li className="text-[13px] text-white/40">À définir</li>
+          ) : (
+            titulaires.map((row) => (
+              <PlayerLine
+                key={row.playerId}
+                jersey={row.jerseyNumber}
+                name={row.fullName}
+                chipClass="bg-club-green-600"
+              />
+            ))
+          )}
+        </ul>
+      </div>
+
+      <div className="mt-4">
+        <p className="text-[12px] font-bold uppercase tracking-wide text-club-sky-300">
+          Remplaçants ({remplacants.length})
+        </p>
+        <ul className="mt-2 space-y-1.5">
+          {remplacants.length === 0 ? (
+            <li className="text-[13px] text-white/40">À définir</li>
+          ) : (
+            remplacants.map((row) => (
+              <PlayerLine
+                key={row.playerId}
+                jersey={row.jerseyNumber}
+                name={row.fullName}
+                chipClass="bg-club-sky-600"
+              />
+            ))
+          )}
+        </ul>
+      </div>
+
+      {absents.length > 0 ? (
+        <div className="mt-4">
+          <p className="text-[12px] font-bold uppercase tracking-wide text-amber-400">
+            Absents ({absents.length})
+          </p>
+          <ul className="mt-2 space-y-1 text-[13px] text-white/60">
+            {absents.map((row) => (
+              <li key={row.playerId}>{row.fullName}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      <p className="mt-6 border-t border-white/15 pt-2.5 text-center text-[10px] text-white/50">
         Présence obligatoire à l&apos;heure indiquée · Staff Striker FC
       </p>
     </div>

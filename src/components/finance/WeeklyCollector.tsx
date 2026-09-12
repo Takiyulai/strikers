@@ -158,6 +158,11 @@ export function WeeklyCollector({
                   <Badge tone={row.hasPaid ? "green" : "neutral"}>
                     {row.hasPaid ? "Payé" : "Non payé"}
                   </Badge>
+                  {row.hasPaid && row.paidRecordedBy ? (
+                    <span className="text-[11px] text-slate-400">
+                      Par {row.paidRecordedBy}
+                    </span>
+                  ) : null}
                   {row.debtFcfa > 0 ? (
                     <span className="text-[11px] font-medium text-red-600">
                       Dette : {formatFcfa(row.debtFcfa)}

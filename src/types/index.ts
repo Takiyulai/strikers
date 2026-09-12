@@ -95,6 +95,7 @@ export interface WeeklyRosterRow {
   hasPaid: boolean;
   debtFcfa: number;
   totalPaid: number;
+  paidRecordedBy: string | null;
 }
 
 /** Récapitulatif financier global. */
@@ -113,6 +114,14 @@ export interface BalanceLike {
   balance: number;
 }
 
+/** Paiement d'une cotisation exceptionnelle, avec traçabilité. */
+export interface SpecialPaymentInfo {
+  playerId: string;
+  amount: number;
+  paidAt: string;
+  recordedByName: string | null;
+}
+
 /** Cotisation exceptionnelle enrichie de ses statistiques de paiement. */
 export interface SpecialContributionWithStats {
   contribution: SpecialContribution;
@@ -120,6 +129,7 @@ export interface SpecialContributionWithStats {
   paidCount: number;
   expectedCount: number;
   paidPlayerIds: string[];
+  payments: SpecialPaymentInfo[];
 }
 
 /** Score mensuel multi-critères : présences, cotisations, impacts. */
