@@ -35,7 +35,6 @@ export const USER_ROLES: UserRole[] = [
   "PRESIDENT_HONNEUR",
   "PRESIDENT",
   "VICE_PRESIDENT",
-  "SECRETAIRE",
   "COACH",
   "ARBITRE",
   "TG",

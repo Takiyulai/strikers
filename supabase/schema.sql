@@ -118,7 +118,7 @@ end$$;
 -- ---------------------------------------------------------------------------
 create type public.user_role as enum (
   'PRESIDENT_HONNEUR', 'PRESIDENT', 'VICE_PRESIDENT',
-  'SECRETAIRE', 'COACH', 'ARBITRE', 'TG', 'JOUEUR'
+  'COACH', 'ARBITRE', 'TG', 'JOUEUR'
 );
 
 create type public.player_status as enum ('EN_ATTENTE', 'ACTIF', 'INACTIF');
@@ -453,21 +453,6 @@ as $$
   );
 $$;
 
--- Gestion des cotisations exceptionnelles : direction + Secrétaire
-create or replace function public.can_manage_contribution()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select coalesce(
-    (select role in ('PRESIDENT_HONNEUR', 'PRESIDENT', 'VICE_PRESIDENT', 'SECRETAIRE')
-     from public.profiles where id = auth.uid()),
-    false
-  );
-$$;
-
 -- ---------------------------------------------------------------------------
 -- 5. TRIGGERS updated_at
 -- ---------------------------------------------------------------------------
@@ -650,23 +635,23 @@ create policy sc_select on public.special_contributions
   for select to authenticated using (true);
 
 create policy sc_insert on public.special_contributions
-  for insert to authenticated with check (public.can_manage_contribution());
+  for insert to authenticated with check (public.can_manage_finance());
 
 create policy sc_update on public.special_contributions
   for update to authenticated
-  using (public.can_manage_contribution())
-  with check (public.can_manage_contribution());
+  using (public.can_manage_finance())
+  with check (public.can_manage_finance());
 
 create policy sc_delete on public.special_contributions
-  for delete to authenticated using (public.can_manage_contribution());
+  for delete to authenticated using (public.can_manage_finance());
 
 create policy scp_select on public.special_contribution_payments
   for select to authenticated using (true);
 
 create policy scp_write on public.special_contribution_payments
   for all to authenticated
-  using (public.can_manage_finance() or public.current_role() = 'SECRETAIRE')
-  with check (public.can_manage_finance() or public.current_role() = 'SECRETAIRE');
+  using (public.can_manage_finance())
+  with check (public.can_manage_finance());
 
 -- EXPENSES ------------------------------------------------------------------
 create policy expenses_select on public.expenses
@@ -742,7 +727,6 @@ grant execute on function public.current_role(),
                             public.can_manage_team(),
                             public.can_manage_finance(),
                             public.can_create_contribution(),
-                            public.can_manage_contribution(),
                             public.can_manage_sport()
   to authenticated;
 

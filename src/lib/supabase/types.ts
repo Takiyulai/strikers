@@ -71,7 +71,6 @@ export type Database = {
       can_manage_team: { Args: Record<string, never>; Returns: boolean };
       can_manage_finance: { Args: Record<string, never>; Returns: boolean };
       can_create_contribution: { Args: Record<string, never>; Returns: boolean };
-      can_manage_contribution: { Args: Record<string, never>; Returns: boolean };
       can_manage_sport: { Args: Record<string, never>; Returns: boolean };
     };
     Enums: {

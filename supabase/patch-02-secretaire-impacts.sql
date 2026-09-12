@@ -1,22 +1,18 @@
 -- ============================================================================
--- STRIKER FC — Patch 02 : Secrétaire + impacts hebdomadaires
+-- STRIKER FC — Patch 02 : impacts hebdomadaires
 --
--- 1. Nouveau rôle SECRETAIRE : lance, modifie et supprime les cotisations
---    exceptionnelles, enregistre leurs paiements, télécharge les récaps.
---    (Rappel : tout le monde paie la cotisation hebdomadaire, sauf le
---    Président d'honneur et le Coach — le Secrétaire paie donc aussi.)
--- 2. Table player_impacts : chaque semaine, le staff consigne les actions
+-- 1. Table player_impacts : chaque semaine, le staff consigne les actions
 --    décisives (but, passe décisive, clean sheet pour les gardiens).
 --    Ces impacts alimentent le score « joueur du mois ».
+-- 2. Les cotisations exceptionnelles sont gérées par le TRÉSORIER GÉNÉRAL
+--    et la direction : aucun nouveau rôle n'est créé, aucune modification
+--    d'enum — le script passe donc sans l'erreur 55P04.
 --
 -- Idempotent : peut être relancé sans risque. Aucune donnée n'est perdue.
--- À exécuter SEUL dans le SQL Editor, après patch-01.
+-- À exécuter SEUL dans le SQL Editor (remplace la version précédente).
 -- ============================================================================
 
--- 1. Rôle Secrétaire ---------------------------------------------------------
-alter type public.user_role add value if not exists 'SECRETAIRE' after 'VICE_PRESIDENT';
-
--- 2. Type d'impact -----------------------------------------------------------
+-- 1. Type d'impact -----------------------------------------------------------
 do $$
 begin
   if not exists (select 1 from pg_type where typname = 'impact_type') then
@@ -24,7 +20,7 @@ begin
   end if;
 end$$;
 
--- 3. Table des impacts hebdomadaires ----------------------------------------
+-- 2. Table des impacts hebdomadaires ----------------------------------------
 create table if not exists public.player_impacts (
   id          uuid primary key default gen_random_uuid(),
   week_id     uuid not null references public.weekly_weeks (id) on delete cascade,
@@ -52,52 +48,34 @@ create policy impacts_write on public.player_impacts
   using (public.can_manage_sport())
   with check (public.can_manage_sport());
 
--- 4. Droits sur les cotisations exceptionnelles ------------------------------
---    PH, Président, Vice-président et Secrétaire gèrent tout le cycle.
-create or replace function public.can_manage_contribution()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select coalesce(
-    (select role in ('PRESIDENT_HONNEUR', 'PRESIDENT', 'VICE_PRESIDENT', 'SECRETAIRE')
-     from public.profiles where id = auth.uid()),
-    false
-  );
-$$;
-
+-- 3. Cotisations exceptionnelles : Trésorier Général + direction -------------
+--    Les policies sc_* passent à can_manage_finance() (TG inclus).
 drop policy if exists sc_insert on public.special_contributions;
 create policy sc_insert on public.special_contributions
-  for insert to authenticated with check (public.can_manage_contribution());
+  for insert to authenticated with check (public.can_manage_finance());
 
 drop policy if exists sc_update on public.special_contributions;
 create policy sc_update on public.special_contributions
   for update to authenticated
-  using (public.can_manage_contribution())
-  with check (public.can_manage_contribution());
+  using (public.can_manage_finance())
+  with check (public.can_manage_finance());
 
-drop policy if exists sc_delete on public.special_contributions
-;
+drop policy if exists sc_delete on public.special_contributions;
 create policy sc_delete on public.special_contributions
-  for delete to authenticated using (public.can_manage_contribution());
-
--- Paiements des cotisations exceptionnelles : TG, Secrétaire et direction.
-drop policy if exists scp_write on public.special_contribution_payments;
-create policy scp_write on public.special_contribution_payments
-  for all to authenticated
-  using (public.can_manage_finance() or public.current_role() = 'SECRETAIRE')
-  with check (public.can_manage_finance() or public.current_role() = 'SECRETAIRE');
-
--- 5. Droits ------------------------------------------------------------------
-grant execute on function public.can_manage_contribution() to authenticated;
+  for delete to authenticated using (public.can_manage_finance());
 
 -- ---------------------------------------------------------------------------
 -- VÉRIFICATIONS
 -- ---------------------------------------------------------------------------
--- Le rôle Secrétaire doit apparaître dans la liste :
-select unnest(enum_range(null::public.user_role)) as role;
-
 -- La table des impacts doit exister :
 select count(*) as impacts from public.player_impacts;
+
+-- Le TG doit pouvoir gérer les cotisations exceptionnelles :
+select
+  case when exists (select 1 from pg_proc p
+                    join pg_namespace n on n.oid = p.pronamespace
+                    where n.nspname = 'public'
+                      and p.proname = 'can_manage_finance')
+    then 'Fonction can_manage_finance présente ✓'
+    else 'ATTENTION : fonction absente'
+  end as controle;

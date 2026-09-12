@@ -28,7 +28,7 @@ export default async function CotisationsExceptionnellesPage() {
   return (
     <DashboardShell
       title="Cotisations exceptionnelles"
-      description="Lancées par la direction ou le Secrétaire — montant, motif, paiements et récapitulatif."
+      description="Lancées par le Trésorier Général ou la direction — montant, motif, paiements et récapitulatif."
     >
       <SpecialContributionsManager
         contributions={contributions}

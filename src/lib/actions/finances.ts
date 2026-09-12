@@ -25,13 +25,13 @@ async function requireFinance() {
   return user;
 }
 
-/** Cotisations exceptionnelles : direction + Secrétaire. */
+/** Cotisations exceptionnelles : Trésorier Général + direction. */
 async function requireContribution() {
   const user = await getSessionUser();
   if (!user) throw new Error("Session expirée.");
   if (!hasPermission(user.role, "contribution.create")) {
     throw new Error(
-      "Seule la direction ou le Secrétaire peut gérer les cotisations exceptionnelles.",
+      "Seul le Trésorier Général ou la direction peut gérer les cotisations exceptionnelles.",
     );
   }
   return user;
