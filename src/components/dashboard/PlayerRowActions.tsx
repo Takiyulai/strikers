@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
-import { updatePlayer } from "@/lib/actions/sport";
+import { deletePlayer, updatePlayer } from "@/lib/actions/sport";
 import {
   PLAYER_POSITIONS,
   PLAYER_STATUSES,
@@ -24,26 +24,32 @@ export function PlayerRowActions({
   position,
   jerseyNumber,
   status,
+  canDelete = false,
 }: {
   playerId: string;
   fullName: string;
   position: PlayerPosition | null;
   jerseyNumber: number | null;
   status: PlayerStatus;
+  canDelete?: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
+    fullName,
     position: position ?? "",
     jerseyNumber: jerseyNumber?.toString() ?? "",
     status,
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSave() {
     setLoading(true);
+    setError(null);
     const result = await updatePlayer({
       playerId,
+      fullName: form.fullName,
       position: (form.position || null) as PlayerPosition | null,
       jerseyNumber: form.jerseyNumber ? Number(form.jerseyNumber) : null,
       status: form.status,
@@ -52,6 +58,27 @@ export function PlayerRowActions({
     if (result.ok) {
       setOpen(false);
       router.refresh();
+    } else {
+      setError(result.error);
+    }
+  }
+
+  async function handleDelete() {
+    if (
+      !window.confirm(
+        `Supprimer définitivement ${fullName} et son compte ? Cette action est irréversible.`,
+      )
+    )
+      return;
+    setLoading(true);
+    setError(null);
+    const result = await deletePlayer(playerId);
+    setLoading(false);
+    if (result.ok) {
+      setOpen(false);
+      router.refresh();
+    } else {
+      setError(result.error);
     }
   }
 
@@ -76,6 +103,12 @@ export function PlayerRowActions({
           Modifier {fullName}
         </h3>
         <div className="space-y-4">
+          <Input
+            label="Nom complet"
+            value={form.fullName}
+            onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+          />
+
           <Select
             label="Poste"
             value={form.position}
@@ -107,15 +140,32 @@ export function PlayerRowActions({
               setForm({ ...form, status: e.target.value as PlayerStatus })
             }
           >
-            {PLAYER_STATUSES.map((st) => (
-              <option key={st} value={st}>
-                {PLAYER_STATUS_LABELS[st]}
+            {PLAYER_STATUSES.map((statut) => (
+              <option key={statut} value={statut}>
+                {PLAYER_STATUS_LABELS[statut]}
               </option>
             ))}
           </Select>
+
+          {error ? (
+            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+              {error}
+            </p>
+          ) : null}
         </div>
 
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="mt-5 flex flex-wrap justify-end gap-2">
+          {canDelete ? (
+            <Button
+              variant="danger"
+              onClick={handleDelete}
+              loading={loading}
+              className="mr-auto"
+            >
+              <Trash2 className="h-4 w-4" />
+              Supprimer
+            </Button>
+          ) : null}
           <Button variant="secondary" onClick={() => setOpen(false)}>
             Annuler
           </Button>

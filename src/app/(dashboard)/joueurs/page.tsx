@@ -15,6 +15,7 @@ import { ROLE_LABELS } from "@/types";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PlayerCreateButton } from "@/components/dashboard/PlayerCreateButton";
 import { PlayerRowActions } from "@/components/dashboard/PlayerRowActions";
 
 import type { PlayerPosition, PlayerStatus, UserRole } from "@/types/database";
@@ -25,7 +26,8 @@ export default async function JoueursPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
 
-  const canManage = hasPermission(user.role, "team.manage");
+  const canManage = hasPermission(user.role, "players.manage");
+  const canDelete = hasPermission(user.role, "team.manage");
   const supabase = createClient();
 
   const { data: players } = await supabase
@@ -37,7 +39,8 @@ export default async function JoueursPage() {
   return (
     <DashboardShell
       title="Joueurs"
-      description="Effectif de Striker FC et informations sportives."
+      description="Effectif de Striker FC — tout le monde (hors Président d'honneur et Coach) paie la cotisation et peut être convoqué."
+      action={canDelete ? <PlayerCreateButton /> : undefined}
     >
       {!players || players.length === 0 ? (
         <EmptyState
@@ -92,6 +95,7 @@ export default async function JoueursPage() {
                     position={player.position as PlayerPosition | null}
                     jerseyNumber={player.jersey_number}
                     status={player.status as PlayerStatus}
+                    canDelete={canDelete}
                   />
                 ) : null}
               </div>

@@ -15,6 +15,7 @@ import type {
   Match,
   MatchConvocation,
   Player,
+  PlayerImpact,
   PlayerWithProfile,
   Profile,
   SpecialContribution,
@@ -54,6 +55,7 @@ export type Database = {
       attendances: Table<Attendance>;
       matches: Table<Match>;
       match_convocations: Table<MatchConvocation>;
+      player_impacts: Table<PlayerImpact>;
       equipment: Table<Equipment>;
     };
     Views: {
@@ -69,6 +71,7 @@ export type Database = {
       can_manage_team: { Args: Record<string, never>; Returns: boolean };
       can_manage_finance: { Args: Record<string, never>; Returns: boolean };
       can_create_contribution: { Args: Record<string, never>; Returns: boolean };
+      can_manage_contribution: { Args: Record<string, never>; Returns: boolean };
       can_manage_sport: { Args: Record<string, never>; Returns: boolean };
     };
     Enums: {
@@ -82,6 +85,7 @@ export type Database = {
       match_status: string;
       convocation_role: string;
       special_contribution_status: string;
+      impact_type: string;
     };
     CompositeTypes: Record<string, never>;
   };

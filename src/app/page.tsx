@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PLAYER_ROLES_FILTER } from "@/lib/constants";
 import {
-  fetchMonthlyTopAttendance,
+  fetchPlayerOfMonth,
   fetchUpcomingMatches,
 } from "@/lib/supabase/queries";
 import { getNextTraining } from "@/lib/schedule";
@@ -21,7 +21,7 @@ async function loadStats(): Promise<Stats> {
   try {
     const supabase = createClient();
 
-    const [{ count: activePlayers }, matches, topAttendance] =
+    const [{ count: activePlayers }, matches, playerOfMonth] =
       await Promise.all([
         supabase
           .from("v_players")
@@ -29,7 +29,7 @@ async function loadStats(): Promise<Stats> {
           .not("role", "in", PLAYER_ROLES_FILTER)
           .eq("status", "ACTIF"),
         fetchUpcomingMatches(supabase, 1),
-        fetchMonthlyTopAttendance(supabase).catch(() => null),
+        fetchPlayerOfMonth(supabase).catch(() => null),
       ]);
 
     const next = matches[0] ?? null;
@@ -52,12 +52,11 @@ async function loadStats(): Promise<Stats> {
             is_home: next.is_home,
           }
         : null,
-      topAttendance: topAttendance
+      playerOfMonth: playerOfMonth
         ? {
-            full_name: topAttendance.fullName,
-            sessions_attended: topAttendance.sessionsAttended,
-            sessions_recorded: topAttendance.sessionsRecorded,
-            monthLabel: topAttendance.monthLabel,
+            fullName: playerOfMonth.fullName,
+            monthLabel: playerOfMonth.monthLabel,
+            highlights: playerOfMonth.highlights,
           }
         : null,
     };
@@ -66,7 +65,7 @@ async function loadStats(): Promise<Stats> {
       activePlayers: 0,
       nextTraining: null,
       nextMatch: null,
-      topAttendance: null,
+      playerOfMonth: null,
     };
   }
 }

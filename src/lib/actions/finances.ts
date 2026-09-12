@@ -3,20 +3,48 @@
 import { revalidatePath } from "next/cache";
 
 import { getSessionUser } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
 import { WEEKLY_AMOUNT } from "@/lib/constants";
 import { getWeekInfo } from "@/lib/dates";
+import { hasPermission } from "@/lib/permissions";
 import { ensureWeek } from "@/lib/supabase/queries";
+import { createClient } from "@/lib/supabase/server";
 
-import type { ExpenseCategory } from "@/types/database";
+import type {
+  ExpenseCategory,
+  SpecialContributionStatus,
+} from "@/types/database";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
 async function requireFinance() {
   const user = await getSessionUser();
   if (!user) throw new Error("Session expirée.");
-  const { hasPermission } = await import("@/lib/permissions");
   if (!hasPermission(user.role, "finance.manage")) {
+    throw new Error("Vous n'avez pas la permission d'effectuer cette action.");
+  }
+  return user;
+}
+
+/** Cotisations exceptionnelles : direction + Secrétaire. */
+async function requireContribution() {
+  const user = await getSessionUser();
+  if (!user) throw new Error("Session expirée.");
+  if (!hasPermission(user.role, "contribution.create")) {
+    throw new Error(
+      "Seule la direction ou le Secrétaire peut gérer les cotisations exceptionnelles.",
+    );
+  }
+  return user;
+}
+
+/** Paiements des cotisations exceptionnelles : TG, Secrétaire ou direction. */
+async function requireSpecialPayment() {
+  const user = await getSessionUser();
+  if (!user) throw new Error("Session expirée.");
+  const allowed =
+    hasPermission(user.role, "finance.manage") ||
+    hasPermission(user.role, "contribution.create");
+  if (!allowed) {
     throw new Error("Vous n'avez pas la permission d'effectuer cette action.");
   }
   return user;
@@ -133,20 +161,15 @@ export interface SpecialContributionInput {
   motif?: string;
   amount: number;
   dueDate?: string;
+  status?: SpecialContributionStatus;
 }
 
-/** Crée une cotisation exceptionnelle (Président / Vice-président). */
+/** Crée une cotisation exceptionnelle (direction ou Secrétaire). */
 export async function createSpecialContribution(
   input: SpecialContributionInput,
 ): Promise<ActionResult> {
   try {
-    const user = await getSessionUser();
-    if (!user) throw new Error("Session expirée.");
-
-    const { hasPermission } = await import("@/lib/permissions");
-    if (!hasPermission(user.role, "contribution.create")) {
-      throw new Error("Seul le Président peut créer une cotisation.");
-    }
+    const user = await requireContribution();
 
     if (!input.title.trim()) throw new Error("Le titre est obligatoire.");
     if (!Number.isFinite(input.amount) || input.amount <= 0) {
@@ -159,13 +182,77 @@ export async function createSpecialContribution(
       motif: input.motif?.trim() || null,
       amount: Math.round(input.amount),
       due_date: input.dueDate || null,
-      status: "ACTIVE",
+      status: input.status ?? "ACTIVE",
       created_by: user.id,
     });
 
     if (error) throw new Error(error.message);
 
-    revalidatePath("/cotisations");
+    revalidatePath("/cotisations-exceptionnelles");
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Erreur inconnue.",
+    };
+  }
+}
+
+/** Modifie une cotisation exceptionnelle (direction ou Secrétaire). */
+export async function updateSpecialContribution(
+  input: SpecialContributionInput & { id: string },
+): Promise<ActionResult> {
+  try {
+    await requireContribution();
+
+    if (!input.title.trim()) throw new Error("Le titre est obligatoire.");
+    if (!Number.isFinite(input.amount) || input.amount <= 0) {
+      throw new Error("Le montant doit être supérieur à zéro.");
+    }
+
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("special_contributions")
+      .update({
+        title: input.title.trim(),
+        motif: input.motif?.trim() || null,
+        amount: Math.round(input.amount),
+        due_date: input.dueDate || null,
+        ...(input.status ? { status: input.status } : {}),
+      })
+      .eq("id", input.id);
+
+    if (error) throw new Error(error.message);
+
+    revalidatePath("/cotisations-exceptionnelles");
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Erreur inconnue.",
+    };
+  }
+}
+
+/** Supprime une cotisation exceptionnelle (direction ou Secrétaire). */
+export async function deleteSpecialContribution(
+  id: string,
+): Promise<ActionResult> {
+  try {
+    await requireContribution();
+    const supabase = createClient();
+
+    const { error } = await supabase
+      .from("special_contributions")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw new Error(error.message);
+
+    revalidatePath("/cotisations-exceptionnelles");
+    revalidatePath("/dashboard");
     return { ok: true };
   } catch (err) {
     return {
@@ -182,7 +269,7 @@ export async function recordSpecialPayment(
   amount: number,
 ): Promise<ActionResult> {
   try {
-    const user = await requireFinance();
+    const user = await requireSpecialPayment();
     const supabase = createClient();
 
     const { error } = await supabase
@@ -200,7 +287,35 @@ export async function recordSpecialPayment(
 
     if (error) throw new Error(error.message);
 
-    revalidatePath("/cotisations");
+    revalidatePath("/cotisations-exceptionnelles");
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Erreur inconnue.",
+    };
+  }
+}
+
+/** Annule le paiement d'une cotisation exceptionnelle. */
+export async function removeSpecialPayment(
+  contributionId: string,
+  playerId: string,
+): Promise<ActionResult> {
+  try {
+    await requireSpecialPayment();
+    const supabase = createClient();
+
+    const { error } = await supabase
+      .from("special_contribution_payments")
+      .delete()
+      .eq("contribution_id", contributionId)
+      .eq("player_id", playerId);
+
+    if (error) throw new Error(error.message);
+
+    revalidatePath("/cotisations-exceptionnelles");
     revalidatePath("/dashboard");
     return { ok: true };
   } catch (err) {

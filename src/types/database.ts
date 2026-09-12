@@ -6,6 +6,7 @@ export type UserRole =
   | "PRESIDENT_HONNEUR"
   | "PRESIDENT"
   | "VICE_PRESIDENT"
+  | "SECRETAIRE"
   | "COACH"
   | "ARBITRE"
   | "TG"
@@ -143,6 +144,19 @@ export type SpecialContributionPayment = {
   player_id: string;
   amount: number;
   paid_at: string;
+  recorded_by: string | null;
+  created_at: string;
+};
+
+export type ImpactType = "BUT" | "PASSE_DECISIVE" | "CLEAN_SHEET";
+
+export type PlayerImpact = {
+  id: string;
+  week_id: string;
+  player_id: string;
+  impact_type: ImpactType;
+  quantity: number;
+  note: string | null;
   recorded_by: string | null;
   created_at: string;
 };

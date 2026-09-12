@@ -36,13 +36,13 @@ export function PublicStats({ stats }: { stats: Stats }) {
     },
     {
       icon: TrendingUp,
-      label: stats.topAttendance
-        ? `Le plus assidu · ${stats.topAttendance.monthLabel}`
-        : "Le plus assidu du mois",
-      value: stats.topAttendance?.full_name ?? "—",
-      hint: stats.topAttendance
-        ? `${stats.topAttendance.sessions_attended}/${stats.topAttendance.sessions_recorded} séances ce mois`
-        : "Le classement se construit séance après séance",
+      label: stats.playerOfMonth
+        ? `Joueur du mois · ${stats.playerOfMonth.monthLabel}`
+        : "Joueur du mois",
+      value: stats.playerOfMonth?.fullName ?? "—",
+      hint: stats.playerOfMonth?.highlights.length
+        ? stats.playerOfMonth.highlights.join(" · ")
+        : "Présence, cotisation et impacts : chaque semaine compte.",
     },
   ];
 

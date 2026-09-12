@@ -3,6 +3,7 @@ import type {
   EquipmentCategory,
   EquipmentStatus,
   ExpenseCategory,
+  ImpactType,
   MatchStatus,
   MatchType,
   PlayerPosition,
@@ -34,6 +35,7 @@ export const USER_ROLES: UserRole[] = [
   "PRESIDENT_HONNEUR",
   "PRESIDENT",
   "VICE_PRESIDENT",
+  "SECRETAIRE",
   "COACH",
   "ARBITRE",
   "TG",
@@ -101,6 +103,18 @@ export const SPECIAL_CONTRIBUTION_STATUSES: SpecialContributionStatus[] = [
   "CLOTUREE",
   "EXPIREE",
 ];
+
+export const IMPACT_TYPES: ImpactType[] = [
+  "BUT",
+  "PASSE_DECISIVE",
+  "CLEAN_SHEET",
+];
+
+export const IMPACT_TYPE_LABELS: Record<ImpactType, string> = {
+  BUT: "But",
+  PASSE_DECISIVE: "Passe décisive",
+  CLEAN_SHEET: "Clean sheet",
+};
 
 export const POSITION_LABELS: Record<PlayerPosition, string> = {
   GARDIEN: "Gardien",

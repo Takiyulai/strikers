@@ -8,6 +8,7 @@ import { ROLE_LABELS } from "@/types";
 import { Logo } from "@/components/layout/Logo";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { NavIcon } from "@/components/layout/NavIcon";
+import { NextTrainingBanner } from "@/components/layout/NextTrainingBanner";
 import { UserMenu } from "@/components/layout/UserMenu";
 
 export async function DashboardShell({
@@ -55,7 +56,11 @@ export async function DashboardShell({
       <div className="lg:pl-64">
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
           <div className="flex items-center gap-3 lg:hidden">
-            <MobileNav items={navItems} />
+            <MobileNav
+              items={navItems}
+              fullName={user.fullName}
+              roleLabel={ROLE_LABELS[user.role]}
+            />
             <Logo href="/dashboard" compact />
           </div>
           <div className="hidden lg:block">
@@ -66,6 +71,8 @@ export async function DashboardShell({
           </div>
           <div className="flex items-center gap-3">{action}</div>
         </header>
+
+        <NextTrainingBanner />
 
         <div className="border-b border-slate-200 bg-white px-4 py-4 lg:hidden">
           <h1 className="text-lg font-bold text-club-navy-900">{title}</h1>

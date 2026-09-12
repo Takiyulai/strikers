@@ -8,8 +8,17 @@ import { Menu, X } from "lucide-react";
 import type { NavItem } from "@/lib/permissions";
 
 import { NavIcon } from "@/components/layout/NavIcon";
+import { UserMenu } from "@/components/layout/UserMenu";
 
-export function MobileNav({ items }: { items: NavItem[] }) {
+export function MobileNav({
+  items,
+  fullName,
+  roleLabel,
+}: {
+  items: NavItem[];
+  fullName: string;
+  roleLabel: string;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -23,10 +32,8 @@ export function MobileNav({ items }: { items: NavItem[] }) {
         <Menu className="h-5 w-5" />
       </button>
 
-      {/* Le tiroir est rendu via un portail dans <body> : le header utilise
-          backdrop-blur, qui transforme ses descendants `fixed` en éléments
-          confinés au header (64 px de haut) — le menu semblait ne pas
-          s'ouvrir. Hors du header, le tiroir couvre tout l'écran. */}
+      {/* Tiroir rendu via un portail dans <body> : le header utilise
+          backdrop-blur, qui confine ses descendants `fixed` au header. */}
       {open
         ? createPortal(
             <div className="fixed inset-0 z-50 lg:hidden">
@@ -62,6 +69,9 @@ export function MobileNav({ items }: { items: NavItem[] }) {
                     </Link>
                   ))}
                 </nav>
+                <div className="border-t border-slate-100 p-3">
+                  <UserMenu fullName={fullName} roleLabel={roleLabel} />
+                </div>
               </div>
             </div>,
             document.body,

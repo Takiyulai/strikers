@@ -4,6 +4,7 @@ export const ROLE_HIERARCHY: Record<UserRole, number> = {
   PRESIDENT_HONNEUR: 100,
   PRESIDENT: 90,
   VICE_PRESIDENT: 80,
+  SECRETAIRE: 75,
   TG: 70,
   COACH: 60,
   ARBITRE: 50,
@@ -15,6 +16,7 @@ export type Permission =
   | "roles.manage"
   | "finance.view"
   | "finance.manage"
+  | "contribution.view"
   | "contribution.create"
   | "sport.manage"
   | "players.manage"
@@ -25,6 +27,7 @@ const PERMISSIONS_BY_ROLE: Record<UserRole, Permission[]> = {
     "team.manage",
     "roles.manage",
     "finance.view",
+    "contribution.view",
     "sport.manage",
     "players.manage",
     "equipment.manage",
@@ -34,6 +37,7 @@ const PERMISSIONS_BY_ROLE: Record<UserRole, Permission[]> = {
     "roles.manage",
     "finance.view",
     "finance.manage",
+    "contribution.view",
     "contribution.create",
     "sport.manage",
     "players.manage",
@@ -42,13 +46,15 @@ const PERMISSIONS_BY_ROLE: Record<UserRole, Permission[]> = {
   VICE_PRESIDENT: [
     "team.manage",
     "finance.view",
+    "contribution.view",
     "finance.manage",
     "contribution.create",
     "sport.manage",
     "players.manage",
     "equipment.manage",
   ],
-  TG: ["finance.view", "finance.manage"],
+  SECRETAIRE: ["contribution.view", "contribution.create"],
+  TG: ["finance.view", "contribution.view", "finance.manage"],
   COACH: ["sport.manage", "players.manage"],
   ARBITRE: ["sport.manage"],
   JOUEUR: [],
@@ -78,6 +84,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Cotisations",
     icon: "Wallet",
     permission: "finance.view",
+  },
+  {
+    href: "/cotisations-exceptionnelles",
+    label: "Cotis. spéciales",
+    icon: "HandCoins",
+    permission: "contribution.view",
   },
   {
     href: "/paiements",

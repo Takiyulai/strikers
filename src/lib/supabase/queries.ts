@@ -1,4 +1,4 @@
-import { format, startOfMonth } from "date-fns";
+import { endOfMonth, format, startOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
 
 import { createClient } from "@/lib/supabase/server";
@@ -6,7 +6,9 @@ import { PLAYER_ROLES_FILTER, WEEKLY_AMOUNT } from "@/lib/constants";
 
 import type {
   Match,
+  PlayerOfMonth,
   PlayerWithProfile,
+  SpecialContributionWithStats,
   TrainingSession,
   WeeklyRosterRow,
   WeekSummary,
@@ -232,4 +234,176 @@ export async function fetchUpcomingMatches(
 
   if (error) throw new Error(error.message);
   return (data ?? []) as Match[];
+}
+
+/** Cotisations exceptionnelles enrichies de leurs paiements. */
+export async function fetchSpecialContributions(
+  supabase: SupabaseLike,
+): Promise<SpecialContributionWithStats[]> {
+  const [{ data: contributions }, { data: payments }, roster] =
+    await Promise.all([
+      supabase
+        .from("special_contributions")
+        .select("*")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("special_contribution_payments")
+        .select("contribution_id, player_id, amount, paid_at"),
+      fetchPlayers(supabase, { onlyActive: true }),
+    ]);
+
+  const expectedCount = roster.length;
+
+  return (contributions ?? []).map((contribution) => {
+    const rows = (payments ?? []).filter(
+      (payment) => payment.contribution_id === contribution.id,
+    );
+    return {
+      contribution,
+      collected: rows.reduce((sum, payment) => sum + payment.amount, 0),
+      paidCount: rows.length,
+      expectedCount,
+      paidPlayerIds: rows.map((payment) => payment.player_id),
+    };
+  });
+}
+
+/**
+ * Joueur du mois : score combinant l'engagement aux cotisations, la
+ * présence aux entraînements et les impacts hebdomadaires consignés par
+ * le staff (buts, passes décisives, clean sheets).
+ *
+ * Score = présences ×2 + cotisations payées ×3 − semaines de retard ×2
+ *         + buts ×5 + passes décisives ×3 + clean sheets ×4
+ */
+export async function fetchPlayerOfMonth(
+  supabase: SupabaseLike,
+): Promise<PlayerOfMonth | null> {
+  const now = new Date();
+  const monthStart = format(startOfMonth(now), "yyyy-MM-dd");
+  const monthEnd = format(endOfMonth(now), "yyyy-MM-dd");
+
+  const roster = await fetchPlayers(supabase, { onlyActive: true });
+  if (roster.length === 0) return null;
+
+  const [{ data: weeks }, { data: trainings }] = await Promise.all([
+    supabase
+      .from("weekly_weeks")
+      .select("id")
+      .gte("week_start", monthStart)
+      .lte("week_start", monthEnd),
+    supabase
+      .from("training_sessions")
+      .select("id")
+      .gte("session_date", monthStart)
+      .lte("session_date", monthEnd),
+  ]);
+
+  const weekIds = (weeks ?? []).map((week) => week.id);
+  const sessionIds = (trainings ?? []).map((training) => training.id);
+
+  const attendance = new Map<string, number>();
+  if (sessionIds.length > 0) {
+    const { data: attendances } = await supabase
+      .from("attendances")
+      .select("player_id")
+      .eq("present", true)
+      .in("session_id", sessionIds);
+    for (const row of attendances ?? []) {
+      attendance.set(row.player_id, (attendance.get(row.player_id) ?? 0) + 1);
+    }
+  }
+
+  const duesPaid = new Map<string, number>();
+  if (weekIds.length > 0) {
+    const { data: payments } = await supabase
+      .from("weekly_payments")
+      .select("player_id, week_id")
+      .in("week_id", weekIds);
+    for (const row of payments ?? []) {
+      duesPaid.set(row.player_id, (duesPaid.get(row.player_id) ?? 0) + 1);
+    }
+  }
+
+  const impacts = new Map<
+    string,
+    { buts: number; passes: number; cleanSheets: number }
+  >();
+  if (weekIds.length > 0) {
+    const { data: rows } = await supabase
+      .from("player_impacts")
+      .select("player_id, impact_type, quantity")
+      .in("week_id", weekIds);
+    for (const row of rows ?? []) {
+      const entry =
+        impacts.get(row.player_id) ?? { buts: 0, passes: 0, cleanSheets: 0 };
+      if (row.impact_type === "BUT") entry.buts += row.quantity;
+      else if (row.impact_type === "PASSE_DECISIVE") entry.passes += row.quantity;
+      else entry.cleanSheets += row.quantity;
+      impacts.set(row.player_id, entry);
+    }
+  }
+
+  const expectedWeeks = weekIds.length;
+  let best: PlayerOfMonth | null = null;
+
+  for (const player of roster) {
+    const attended = attendance.get(player.id) ?? 0;
+    const paid = Math.min(duesPaid.get(player.id) ?? 0, expectedWeeks);
+    const late = Math.max(expectedWeeks - paid, 0);
+    const playerImpacts =
+      impacts.get(player.id) ?? { buts: 0, passes: 0, cleanSheets: 0 };
+
+    const score =
+      attended * 2 +
+      paid * 3 -
+      late * 2 +
+      playerImpacts.buts * 5 +
+      playerImpacts.passes * 3 +
+      playerImpacts.cleanSheets * 4;
+
+    if (!best || score > best.score) {
+      const highlights: string[] = [];
+      if (playerImpacts.buts > 0) {
+        highlights.push(
+          `${playerImpacts.buts} but${playerImpacts.buts > 1 ? "s" : ""}`,
+        );
+      }
+      if (playerImpacts.passes > 0) {
+        highlights.push(
+          `${playerImpacts.passes} passe${
+            playerImpacts.passes > 1 ? "s" : ""
+          } décisive${playerImpacts.passes > 1 ? "s" : ""}`,
+        );
+      }
+      if (playerImpacts.cleanSheets > 0) {
+        highlights.push(
+          `${playerImpacts.cleanSheets} clean sheet${
+            playerImpacts.cleanSheets > 1 ? "s" : ""
+          }`,
+        );
+      }
+      if (sessionIds.length > 0) {
+        highlights.push(`${attended}/${sessionIds.length} entraînements`);
+      }
+      highlights.push(
+        late === 0
+          ? "cotisations à jour"
+          : `${late} semaine${late > 1 ? "s" : ""} de retard`,
+      );
+
+      const rawMonth = format(now, "MMMM yyyy", { locale: fr });
+      best = {
+        fullName: player.full_name,
+        monthLabel: rawMonth.charAt(0).toUpperCase() + rawMonth.slice(1),
+        score,
+        attendance: { attended, total: sessionIds.length },
+        dues: { paid, late },
+        impacts: playerImpacts,
+        highlights,
+      };
+    }
+  }
+
+  return best;
 }

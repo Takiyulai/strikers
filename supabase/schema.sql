@@ -118,7 +118,7 @@ end$$;
 -- ---------------------------------------------------------------------------
 create type public.user_role as enum (
   'PRESIDENT_HONNEUR', 'PRESIDENT', 'VICE_PRESIDENT',
-  'COACH', 'ARBITRE', 'TG', 'JOUEUR'
+  'SECRETAIRE', 'COACH', 'ARBITRE', 'TG', 'JOUEUR'
 );
 
 create type public.player_status as enum ('EN_ATTENTE', 'ACTIF', 'INACTIF');
@@ -150,6 +150,10 @@ create type public.convocation_role as enum (
 
 create type public.special_contribution_status as enum (
   'ACTIVE', 'CLOTUREE', 'EXPIREE'
+);
+
+create type public.impact_type as enum (
+  'BUT', 'PASSE_DECISIVE', 'CLEAN_SHEET'
 );
 
 -- ---------------------------------------------------------------------------
@@ -306,6 +310,20 @@ create table public.equipment (
   updated_at  timestamptz not null default now()
 );
 
+-- 2.10 Impacts hebdomadaires : chaque semaine, le staff consigne les actions
+--      décisives (but, passe décisive, clean sheet pour les gardiens).
+create table public.player_impacts (
+  id          uuid primary key default gen_random_uuid(),
+  week_id     uuid not null references public.weekly_weeks (id) on delete cascade,
+  player_id   uuid not null references public.players (id) on delete cascade,
+  impact_type public.impact_type not null,
+  quantity    integer not null default 1 check (quantity > 0),
+  note        text,
+  recorded_by uuid references public.profiles (id) on delete set null,
+  created_at  timestamptz not null default now(),
+  unique (week_id, player_id, impact_type)
+);
+
 -- ---------------------------------------------------------------------------
 -- 3. INDEX
 -- ---------------------------------------------------------------------------
@@ -320,6 +338,8 @@ create index idx_attendances_session    on public.attendances (session_id);
 create index idx_convocations_match     on public.match_convocations (match_id);
 create index idx_trainings_date         on public.training_sessions (session_date);
 create index idx_matches_date           on public.matches (match_date);
+create index idx_impacts_week           on public.player_impacts (week_id);
+create index idx_impacts_player         on public.player_impacts (player_id);
 
 -- ---------------------------------------------------------------------------
 -- 4. FONCTIONS UTILITAIRES
@@ -428,6 +448,21 @@ set search_path = public
 as $$
   select coalesce(
     (select role in ('PRESIDENT_HONNEUR', 'PRESIDENT', 'VICE_PRESIDENT', 'COACH', 'ARBITRE')
+     from public.profiles where id = auth.uid()),
+    false
+  );
+$$;
+
+-- Gestion des cotisations exceptionnelles : direction + Secrétaire
+create or replace function public.can_manage_contribution()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce(
+    (select role in ('PRESIDENT_HONNEUR', 'PRESIDENT', 'VICE_PRESIDENT', 'SECRETAIRE')
      from public.profiles where id = auth.uid()),
     false
   );
@@ -573,6 +608,7 @@ alter table public.attendances                   enable row level security;
 alter table public.matches                       enable row level security;
 alter table public.match_convocations            enable row level security;
 alter table public.equipment                     enable row level security;
+alter table public.player_impacts                enable row level security;
 
 -- PROFILES ------------------------------------------------------------------
 create policy profiles_select on public.profiles
@@ -614,23 +650,23 @@ create policy sc_select on public.special_contributions
   for select to authenticated using (true);
 
 create policy sc_insert on public.special_contributions
-  for insert to authenticated with check (public.can_create_contribution());
+  for insert to authenticated with check (public.can_manage_contribution());
 
 create policy sc_update on public.special_contributions
   for update to authenticated
-  using (public.can_create_contribution())
-  with check (public.can_create_contribution());
+  using (public.can_manage_contribution())
+  with check (public.can_manage_contribution());
 
 create policy sc_delete on public.special_contributions
-  for delete to authenticated using (public.can_manage_team());
+  for delete to authenticated using (public.can_manage_contribution());
 
 create policy scp_select on public.special_contribution_payments
   for select to authenticated using (true);
 
 create policy scp_write on public.special_contribution_payments
   for all to authenticated
-  using (public.can_manage_finance())
-  with check (public.can_manage_finance());
+  using (public.can_manage_finance() or public.current_role() = 'SECRETAIRE')
+  with check (public.can_manage_finance() or public.current_role() = 'SECRETAIRE');
 
 -- EXPENSES ------------------------------------------------------------------
 create policy expenses_select on public.expenses
@@ -684,6 +720,15 @@ create policy equipment_write on public.equipment
   using (public.can_manage_team())
   with check (public.can_manage_team());
 
+-- IMPACTS -------------------------------------------------------------------
+create policy impacts_select on public.player_impacts
+  for select to authenticated using (true);
+
+create policy impacts_write on public.player_impacts
+  for all to authenticated
+  using (public.can_manage_sport())
+  with check (public.can_manage_sport());
+
 -- ---------------------------------------------------------------------------
 -- 8. DROITS
 -- ---------------------------------------------------------------------------
@@ -697,6 +742,7 @@ grant execute on function public.current_role(),
                             public.can_manage_team(),
                             public.can_manage_finance(),
                             public.can_create_contribution(),
+                            public.can_manage_contribution(),
                             public.can_manage_sport()
   to authenticated;
 

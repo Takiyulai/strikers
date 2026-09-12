@@ -3,13 +3,17 @@
 import { revalidatePath } from "next/cache";
 
 import { getSessionUser } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { getWeekInfo } from "@/lib/dates";
 import { hasPermission } from "@/lib/permissions";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureWeek } from "@/lib/supabase/queries";
+import { createClient } from "@/lib/supabase/server";
 
 import type {
   ConvocationRole,
   EquipmentCategory,
   EquipmentStatus,
+  ImpactType,
   MatchType,
   PlayerPosition,
   PlayerStatus,
@@ -267,6 +271,7 @@ export async function updateEquipmentStatus(
 
 export interface PlayerUpdateInput {
   playerId: string;
+  fullName?: string;
   position: PlayerPosition | null;
   jerseyNumber: number | null;
   status: PlayerStatus;
@@ -279,6 +284,13 @@ export async function updatePlayer(
     await requireTeam();
     const supabase = createClient();
 
+    const { data: player } = await supabase
+      .from("players")
+      .select("profile_id")
+      .eq("id", input.playerId)
+      .maybeSingle();
+    if (!player) throw new Error("Joueur introuvable.");
+
     const { error } = await supabase
       .from("players")
       .update({
@@ -289,7 +301,149 @@ export async function updatePlayer(
       .eq("id", input.playerId);
     if (error) throw new Error(error.message);
 
+    if (input.fullName?.trim()) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ full_name: input.fullName.trim() })
+        .eq("id", player.profile_id);
+      if (profileError) throw new Error(profileError.message);
+    }
+
     revalidatePath("/joueurs");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Erreur." };
+  }
+}
+
+export interface PlayerCreateInput {
+  fullName: string;
+  email: string;
+  phone?: string;
+  position?: PlayerPosition | null;
+  jerseyNumber?: number | null;
+  status?: PlayerStatus;
+}
+
+export type PlayerCreateResult =
+  | { ok: true; tempPassword: string; email: string }
+  | { ok: false; error: string };
+
+/**
+ * Crée un joueur ET son compte (Président / direction). Le joueur n'a pas
+ * besoin de s'inscrire lui-même : un mot de passe temporaire est généré et
+ * affiché une seule fois, à communiquer au joueur.
+ */
+export async function createPlayer(
+  input: PlayerCreateInput,
+): Promise<PlayerCreateResult> {
+  try {
+    await requireTeam();
+    if (!input.fullName.trim()) throw new Error("Le nom est obligatoire.");
+    if (!input.email.trim()) throw new Error("L'e-mail est obligatoire.");
+
+    const tempPassword = `SFC-${Math.random()
+      .toString(36)
+      .slice(2, 8)}${Math.floor(Math.random() * 90 + 10)}`;
+
+    const admin = createAdminClient();
+    const { data: created, error: createError } = await admin.auth.admin.createUser(
+      {
+        email: input.email.trim(),
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          full_name: input.fullName.trim(),
+          phone: input.phone?.trim() || null,
+        },
+      },
+    );
+    if (createError) throw new Error(createError.message);
+    if (!created.user) throw new Error("Compte créé mais introuvable.");
+
+    const supabase = createClient();
+    const { error: updateError } = await supabase
+      .from("players")
+      .update({
+        position: input.position ?? null,
+        jersey_number: input.jerseyNumber ?? null,
+        status: input.status ?? "ACTIF",
+      })
+      .eq("profile_id", created.user.id);
+    if (updateError) throw new Error(updateError.message);
+
+    revalidatePath("/joueurs");
+    return { ok: true, tempPassword, email: input.email.trim() };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Erreur." };
+  }
+}
+
+/** Supprime définitivement un joueur et son compte (Président / direction). */
+export async function deletePlayer(playerId: string): Promise<ActionResult> {
+  try {
+    const user = await requireTeam();
+    const supabase = createClient();
+
+    const { data: player } = await supabase
+      .from("players")
+      .select("profile_id")
+      .eq("id", playerId)
+      .maybeSingle();
+    if (!player) throw new Error("Joueur introuvable.");
+    if (player.profile_id === user.id) {
+      throw new Error("Vous ne pouvez pas supprimer votre propre compte.");
+    }
+
+    const admin = createAdminClient();
+    const { error } = await admin.auth.admin.deleteUser(player.profile_id);
+    if (error) throw new Error(error.message);
+
+    revalidatePath("/joueurs");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Erreur." };
+  }
+}
+
+/**
+ * Consigne les actions décisives de la semaine (Coach / staff sportif) :
+ * but, passe décisive, clean sheet pour les gardiens. Quantity à 0 supprime.
+ */
+export async function setPlayerImpact(
+  playerId: string,
+  impactType: ImpactType,
+  quantity: number,
+): Promise<ActionResult> {
+  try {
+    const user = await requireSport();
+    const supabase = createClient();
+
+    const week = await ensureWeek(supabase, getWeekInfo(new Date()));
+
+    if (quantity <= 0) {
+      const { error } = await supabase
+        .from("player_impacts")
+        .delete()
+        .eq("week_id", week.id)
+        .eq("player_id", playerId)
+        .eq("impact_type", impactType);
+      if (error) throw new Error(error.message);
+    } else {
+      const { error } = await supabase.from("player_impacts").upsert(
+        {
+          week_id: week.id,
+          player_id: playerId,
+          impact_type: impactType,
+          quantity,
+          recorded_by: user.id,
+        },
+        { onConflict: "week_id,player_id,impact_type" },
+      );
+      if (error) throw new Error(error.message);
+    }
+
+    revalidatePath("/dashboard");
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Erreur." };

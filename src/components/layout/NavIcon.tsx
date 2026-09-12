@@ -3,6 +3,7 @@
 import {
   CreditCard,
   Dumbbell,
+  HandCoins,
   LayoutDashboard,
   Package,
   Receipt,
@@ -19,6 +20,7 @@ const ICONS: Record<string, LucideIcon> = {
   Wallet,
   CreditCard,
   Receipt,
+  HandCoins,
   Dumbbell,
   Trophy,
   Package,

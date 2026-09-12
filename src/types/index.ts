@@ -1,11 +1,16 @@
 export * from "./database";
 
-import type { PlayerWithProfile, UserRole } from "./database";
+import type {
+  PlayerWithProfile,
+  SpecialContribution,
+  UserRole,
+} from "./database";
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   PRESIDENT_HONNEUR: "Président d'honneur",
   PRESIDENT: "Président",
   VICE_PRESIDENT: "Vice-président",
+  SECRETAIRE: "Secrétaire",
   COACH: "Coach",
   ARBITRE: "Arbitre",
   TG: "Trésorier Général",
@@ -16,6 +21,7 @@ export const ROLE_BADGE_CLASSES: Record<UserRole, string> = {
   PRESIDENT_HONNEUR: "bg-amber-100 text-amber-800",
   PRESIDENT: "bg-club-navy-100 text-club-navy-800",
   VICE_PRESIDENT: "bg-club-navy-100 text-club-navy-700",
+  SECRETAIRE: "bg-indigo-100 text-indigo-800",
   COACH: "bg-club-green-100 text-club-green-800",
   ARBITRE: "bg-purple-100 text-purple-800",
   TG: "bg-club-sky-100 text-club-sky-800",
@@ -26,6 +32,7 @@ export const STAFF_ROLES: UserRole[] = [
   "PRESIDENT_HONNEUR",
   "PRESIDENT",
   "VICE_PRESIDENT",
+  "SECRETAIRE",
   "COACH",
   "ARBITRE",
   "TG",
@@ -57,11 +64,10 @@ export interface PublicStats {
     location: string | null;
     is_home: boolean;
   } | null;
-  topAttendance: {
-    full_name: string;
-    sessions_attended: number;
-    sessions_recorded: number;
+  playerOfMonth: {
+    fullName: string;
     monthLabel: string;
+    highlights: string[];
   } | null;
 }
 
@@ -108,4 +114,24 @@ export interface BalanceLike {
   total_income: number;
   total_expense: number;
   balance: number;
+}
+
+/** Cotisation exceptionnelle enrichie de ses statistiques de paiement. */
+export interface SpecialContributionWithStats {
+  contribution: SpecialContribution;
+  collected: number;
+  paidCount: number;
+  expectedCount: number;
+  paidPlayerIds: string[];
+}
+
+/** Score mensuel multi-critères : présences, cotisations, impacts. */
+export interface PlayerOfMonth {
+  fullName: string;
+  monthLabel: string;
+  score: number;
+  attendance: { attended: number; total: number };
+  dues: { paid: number; late: number };
+  impacts: { buts: number; passes: number; cleanSheets: number };
+  highlights: string[];
 }
