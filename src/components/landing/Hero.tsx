@@ -32,18 +32,12 @@ export function Hero() {
           commune : progresser ensemble, match après match.
         </p>
 
-        <div className="mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+        <div className="mt-9">
           <Link
             href="/register"
             className="inline-flex items-center justify-center rounded-xl bg-club-sky-500 px-8 py-3.5 text-sm font-bold text-white shadow-lg transition-colors hover:bg-club-sky-400"
           >
             Rejoindre l&apos;équipe
-          </Link>
-          <Link
-            href="/login"
-            className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-8 py-3.5 text-sm font-bold text-white backdrop-blur transition-colors hover:bg-white/20"
-          >
-            Connexion
           </Link>
         </div>
       </div>

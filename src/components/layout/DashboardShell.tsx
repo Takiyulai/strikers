@@ -72,25 +72,29 @@ export async function DashboardShell({
 
       {/* Contenu principal */}
       <div className="lg:pl-56">
-        <header className="sticky top-0 z-20 flex h-12 items-center justify-between gap-3 border-b border-slate-200/80 bg-white/80 px-3 backdrop-blur-md sm:h-14 sm:px-5">
-          <div className="flex items-center gap-2 lg:hidden">
-            <MobileNav
-              items={navItems}
-              fullName={user.fullName}
-              roleLabel={ROLE_LABELS[user.role]}
-            />
-            <Logo href="/dashboard" compact />
-          </div>
-          <div className="hidden lg:block">
-            <h1 className="text-base font-bold text-club-navy-900">{title}</h1>
-            {description ? (
-              <p className="text-[11px] text-slate-500">{description}</p>
-            ) : null}
-          </div>
-          <div className="flex items-center gap-2">{action}</div>
-        </header>
+        {/* Barre du haut et bandeau « prochaine séance » collés ensemble : le
+            rappel et son minuteur restent visibles pendant le défilement. */}
+        <div className="sticky top-0 z-20">
+          <header className="flex h-12 items-center justify-between gap-3 border-b border-slate-200/80 bg-white/80 px-3 backdrop-blur-md sm:h-14 sm:px-5">
+            <div className="flex items-center gap-2 lg:hidden">
+              <MobileNav
+                items={navItems}
+                fullName={user.fullName}
+                roleLabel={ROLE_LABELS[user.role]}
+              />
+              <Logo href="/dashboard" compact />
+            </div>
+            <div className="hidden lg:block">
+              <h1 className="text-base font-bold text-club-navy-900">{title}</h1>
+              {description ? (
+                <p className="text-[11px] text-slate-500">{description}</p>
+              ) : null}
+            </div>
+            <div className="flex items-center gap-2">{action}</div>
+          </header>
 
-        <NextTrainingBanner />
+          <NextTrainingBanner />
+        </div>
 
         <div className="border-b border-slate-200/60 bg-white px-3 py-3 lg:hidden">
           <div className="flex items-center gap-2">
