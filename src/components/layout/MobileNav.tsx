@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Home, Menu, X } from "lucide-react";
 
 import type { NavItem } from "@/lib/permissions";
 
@@ -27,49 +27,63 @@ export function MobileNav({
         type="button"
         aria-label="Ouvrir le menu"
         onClick={() => setOpen(true)}
-        className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-club-navy-700"
+        className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-club-navy-700"
       >
-        <Menu className="h-5 w-5" />
+        <Menu className="h-4 w-4" />
       </button>
 
-      {/* Tiroir rendu via un portail dans <body> : le header utilise
-          backdrop-blur, qui confine ses descendants `fixed` au header. */}
       {open
         ? createPortal(
             <div className="fixed inset-0 z-50 lg:hidden">
               <div
-                className="absolute inset-0 bg-club-navy-950/50"
+                className="absolute inset-0 bg-club-navy-950/60"
                 onClick={() => setOpen(false)}
                 aria-hidden
               />
-              <div className="absolute inset-y-0 left-0 flex w-72 flex-col bg-white shadow-xl">
-                <div className="flex h-16 items-center justify-between border-b border-slate-100 px-4">
-                  <span className="text-sm font-black uppercase tracking-wide text-club-navy-900">
-                    Striker FC
-                  </span>
+              <div className="absolute inset-y-0 left-0 flex w-64 flex-col bg-club-navy-900 text-white shadow-xl">
+                <div className="flex h-14 items-center justify-between border-b border-white/10 px-4">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-club-sky-500 text-xs font-black text-white">
+                      S
+                    </span>
+                    <span className="text-sm font-black uppercase tracking-wide">
+                      Striker FC
+                    </span>
+                  </div>
                   <button
                     type="button"
                     aria-label="Fermer le menu"
                     onClick={() => setOpen(false)}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white"
                   >
-                    <X className="h-5 w-5" />
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
-                <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+
+                <nav className="flex-1 space-y-0.5 overflow-y-auto p-2.5">
+                  <Link
+                    href="/"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                  >
+                    <Home className="h-4 w-4" />
+                    Page d&apos;accueil
+                  </Link>
+                  <div className="my-1.5 border-t border-white/10" />
                   {items.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-club-navy-700 hover:bg-club-sky-50"
+                      className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
                     >
-                      <NavIcon name={item.icon} className="h-5 w-5" />
+                      <NavIcon name={item.icon} className="h-4 w-4 text-white/50" />
                       {item.label}
                     </Link>
                   ))}
                 </nav>
-                <div className="border-t border-slate-100 p-3">
+
+                <div className="border-t border-white/10 p-2.5">
                   <UserMenu fullName={fullName} roleLabel={roleLabel} />
                 </div>
               </div>

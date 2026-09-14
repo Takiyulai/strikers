@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowLeft, Home } from "lucide-react";
 
 import { getSessionUser } from "@/lib/auth";
 import { getNavItemsForRole } from "@/lib/permissions";
@@ -28,24 +29,40 @@ export async function DashboardShell({
   const navItems = getNavItemsForRole(user.role);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-slate-200 bg-white lg:flex">
-        <div className="flex h-16 items-center border-b border-slate-100 px-5">
-          <Logo href="/dashboard" />
+    <div className="min-h-screen bg-slate-50/80">
+      {/* Sidebar desktop — fond navy pour contraster avec le contenu blanc */}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col bg-club-navy-900 text-white lg:flex">
+        <div className="flex h-14 items-center gap-2 border-b border-white/10 px-4">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-club-sky-500 text-sm font-black text-white">
+            S
+          </span>
+          <span className="text-sm font-black uppercase tracking-wide text-white">
+            Striker FC
+          </span>
         </div>
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+
+        <nav className="flex-1 space-y-0.5 overflow-y-auto p-2.5">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <Home className="h-4 w-4" />
+            Page d&apos;accueil
+          </Link>
+          <div className="my-1.5 border-t border-white/10" />
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-club-navy-700 transition-colors hover:bg-club-sky-50 hover:text-club-sky-700"
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
             >
-              <NavIcon name={item.icon} className="h-4 w-4" />
+              <NavIcon name={item.icon} className="h-4 w-4 text-white/50" />
               {item.label}
             </Link>
           ))}
         </nav>
-        <div className="border-t border-slate-100 p-3">
+
+        <div className="border-t border-white/10 p-2.5">
           <UserMenu
             fullName={user.fullName}
             roleLabel={ROLE_LABELS[user.role]}
@@ -53,9 +70,10 @@ export async function DashboardShell({
         </div>
       </aside>
 
-      <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
-          <div className="flex items-center gap-3 lg:hidden">
+      {/* Contenu principal */}
+      <div className="lg:pl-56">
+        <header className="sticky top-0 z-20 flex h-12 items-center justify-between gap-3 border-b border-slate-200/80 bg-white/80 px-3 backdrop-blur-md sm:h-14 sm:px-5">
+          <div className="flex items-center gap-2 lg:hidden">
             <MobileNav
               items={navItems}
               fullName={user.fullName}
@@ -64,24 +82,33 @@ export async function DashboardShell({
             <Logo href="/dashboard" compact />
           </div>
           <div className="hidden lg:block">
-            <h1 className="text-lg font-bold text-club-navy-900">{title}</h1>
+            <h1 className="text-base font-bold text-club-navy-900">{title}</h1>
             {description ? (
-              <p className="text-xs text-slate-500">{description}</p>
+              <p className="text-[11px] text-slate-500">{description}</p>
             ) : null}
           </div>
-          <div className="flex items-center gap-3">{action}</div>
+          <div className="flex items-center gap-2">{action}</div>
         </header>
 
         <NextTrainingBanner />
 
-        <div className="border-b border-slate-200 bg-white px-4 py-4 lg:hidden">
-          <h1 className="text-lg font-bold text-club-navy-900">{title}</h1>
+        <div className="border-b border-slate-200/60 bg-white px-3 py-3 lg:hidden">
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50"
+              aria-label="Page d'accueil"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+            </Link>
+            <h1 className="text-base font-bold text-club-navy-900">{title}</h1>
+          </div>
           {description ? (
-            <p className="text-xs text-slate-500">{description}</p>
+            <p className="mt-0.5 text-[11px] text-slate-500">{description}</p>
           ) : null}
         </div>
 
-        <main className="mx-auto max-w-6xl p-4 pb-24 sm:p-6">{children}</main>
+        <main className="mx-auto max-w-6xl p-3 pb-20 sm:p-5">{children}</main>
       </div>
     </div>
   );
