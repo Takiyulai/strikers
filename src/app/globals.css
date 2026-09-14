@@ -33,57 +33,27 @@ body {
 }
 
 @layer components {
-  .card {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-card;
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-bold tracking-tight text-club-navy-900;
   }
 
-  .card-padded {
-    @apply card p-5;
+  /* Réduit les marges par défaut des formulaires */
+  form {
+    @apply space-y-3;
   }
-
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
-      transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-club-sky-500
-      focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
-  }
-
-  .btn-primary {
-    @apply btn bg-club-sky-600 text-white hover:bg-club-sky-700 active:bg-club-sky-800;
-  }
-
-  .btn-secondary {
-    @apply btn border border-slate-200 bg-white text-club-navy-800 hover:bg-slate-50;
-  }
-
-  .btn-success {
-    @apply btn bg-club-green-600 text-white hover:bg-club-green-700;
-  }
-
-  .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-700;
-  }
-
-  .btn-ghost {
-    @apply btn text-club-navy-700 hover:bg-slate-100;
-  }
-
-  .input {
-    @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-club-navy-900
-      placeholder:text-slate-400 focus:border-club-sky-500 focus:outline-none focus:ring-2
-      focus:ring-club-sky-500/30;
-  }
-
-  .label {
-    @apply mb-1.5 block text-sm font-medium text-club-navy-700;
-  }
-
-  .badge {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
-  }
-
-  .section-title {
-    @apply text-lg font-bold text-club-navy-900 sm:text-xl;
-  }
+}
 }
 
 @layer utilities {

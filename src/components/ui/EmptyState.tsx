@@ -10,15 +10,15 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/60 px-6 py-12 text-center">
-      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-club-sky-100 text-xl">
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-8 text-center">
+      <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-club-sky-50 text-lg">
         ⚽
       </div>
-      <p className="text-base font-semibold text-club-navy-900">{title}</p>
+      <p className="text-sm font-semibold text-club-navy-900">{title}</p>
       {description ? (
-        <p className="mt-1 max-w-sm text-sm text-slate-500">{description}</p>
+        <p className="mt-1 max-w-xs text-xs text-slate-500">{description}</p>
       ) : null}
-      {action ? <div className="mt-4">{action}</div> : null}
+      {action ? <div className="mt-3">{action}</div> : null}
     </div>
   );
 }

@@ -23,23 +23,25 @@ export function UserMenu({
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-2.5">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-club-sky-600 text-xs font-bold text-white">
+    <div className="flex items-center gap-2 rounded-lg bg-slate-50/80 p-1.5">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-club-sky-600 text-[11px] font-bold text-white">
         {getInitials(fullName || "?")}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-club-navy-900">
+        <p className="truncate text-[13px] font-semibold text-club-navy-900">
           {fullName || "Utilisateur"}
         </p>
-        <p className="truncate text-xs text-slate-500">{roleLabel}</p>
+        <p className="truncate text-[10px] font-medium text-slate-500">
+          {roleLabel}
+        </p>
       </div>
       <button
         type="button"
         onClick={handleLogout}
         aria-label="Se déconnecter"
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-white hover:text-red-600"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white hover:text-red-600"
       >
-        <LogOut className="h-4 w-4" />
+        <LogOut className="h-3.5 w-3.5" />
       </button>
     </div>
   );
