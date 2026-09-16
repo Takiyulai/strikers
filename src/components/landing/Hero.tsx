@@ -7,9 +7,8 @@ export function Hero() {
     <section className="relative isolate overflow-hidden bg-club-navy-950">
       <div className="absolute inset-0" aria-hidden>
         <img
-          src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1920&q=80"
-          alt=""
-          className="h-full w-full object-cover opacity-45"
+          src="/images/str.jpeg"
+          className="h-full w-full object-cover opacity-75"
         />
         <div className="absolute inset-0 bg-hero-overlay" />
         <div className="absolute inset-0 bg-gradient-to-t from-club-navy-950 via-club-navy-950/10 to-club-navy-950/70" />

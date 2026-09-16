@@ -2,19 +2,18 @@
 
 const STAFF = [
   {
-    name: "AHOUASSOU Eude",
-    role: "Président d'honneur",
-    accent: "bg-amber-100 text-amber-800",
-    photo:
-      "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=640&q=80",
-    bio: "Moteur et conscience du club. Sa passion pour le ballon rond ne prend jamais de repos : présent à chaque séance, attentif au moindre détail, il met son énergie et ses moyens au service d'une seule idée — voir Striker FC toujours au top des tops. Son exigence fait grandir chacun, sa fidélité cimente le groupe.",
-  },
+  name: "AHOUASSOU Eude",
+  role: "Président d'honneur",
+  accent: "bg-amber-100 text-amber-800",
+  photo: "/images/ho.jpeg",
+  bio: "Moteur et conscience du club. Avec une grande humilité, il met sa passion, son expérience et ses moyens au service de Striker FC. Présent, attentif et toujours disponible, il veille au moindre détail et accompagne le groupe avec discrétion et bienveillance. Son exigence fait grandir chacun, tandis que sa fidélité et son engagement nourrissent une ambition simple : voir Striker FC toujours au meilleur de lui-même.",
+},
   {
     name: "MOUSSA B. Mouktadine",
     role: "Président",
     accent: "bg-club-navy-100 text-club-navy-800",
     photo:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=640&q=80",
+      "/images/pr.jpeg",
     bio: "À la direction du club, il structure, décide et fédère. Sa vision claire et son sens de l'organisation donnent à l'équipe les moyens concrets de ses ambitions, sur le terrain comme en dehors.",
   },
   {
@@ -22,7 +21,7 @@ const STAFF = [
     role: "Coach",
     accent: "bg-club-green-100 text-club-green-800",
     photo:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=640&q=80",
+      "/images/ch.jpeg",
     bio: "Stratège du jeu, il bâtit chaque séance avec rigueur et transmet au groupe sa culture de l'effort. Sous sa conduite, la progression n'est pas une option : c'est une exigence quotidienne.",
   },
   {
@@ -30,7 +29,7 @@ const STAFF = [
     role: "Trésorier Général",
     accent: "bg-club-sky-100 text-club-sky-800",
     photo:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=640&q=80",
+      "/images/tg.jpeg",
     bio: "Sentinelle des finances du club, il garantit la transparence de chaque franc collecté et de chaque franc dépensé. Sa rigueur sécurise les projets de l'équipe et la confiance de tous.",
   },
 ];
@@ -83,10 +82,7 @@ export function StaffSection() {
           ))}
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Photos d&apos;illustration — à remplacer par les photos officielles du
-          staff.
-        </p>
+
       </div>
     </section>
   );
