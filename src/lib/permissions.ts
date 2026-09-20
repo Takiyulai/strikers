@@ -63,6 +63,7 @@ const PERMISSIONS_BY_ROLE: Record<UserRole, Permission[]> = {
   ASSISTANT_TG: [
     "attendance.mark_late",
     "finance.view",
+    "finance.manage",
     "contribution.view",
   ],
   COACH: ["sport.manage", "players.manage"],

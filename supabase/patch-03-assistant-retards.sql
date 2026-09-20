@@ -61,11 +61,18 @@ create policy late_select on public.late_arrivals
   for select to authenticated using (true);
 
 -- Marquage et levée : can_manage_finance() (TG, direction, PH).
+-- L'Assistant TG peut aussi régler les amendes (UPDATE) mais pas les supprimer.
 drop policy if exists late_write on public.late_arrivals;
 create policy late_write on public.late_arrivals
   for all to authenticated
-  using (public.can_manage_finance())
-  with check (public.can_manage_finance());
+  using (
+    public.can_manage_finance()
+    or public.current_role() = 'ASSISTANT_TG'
+  )
+  with check (
+    public.can_manage_finance()
+    or (public.current_role() = 'ASSISTANT_TG' and status = 'PAYE')
+  );
 
 -- Insertion : ouvert aussi à l'Assistant TG (rôle dédié).
 drop policy if exists late_insert_assistant on public.late_arrivals;
@@ -103,7 +110,7 @@ late as (
 )
 select
   wd.player_id,
-  sum(wd.due_fcfa + coalesce(l.amount, 0)) as debt_fcfa
+  sum(wd.due_fcfa + coalesce(l.amount, 0))::integer as debt_fcfa
 from week_due wd
 left join paid p
   on p.player_id = wd.player_id and p.week_id = wd.week_id

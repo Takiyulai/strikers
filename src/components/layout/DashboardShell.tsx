@@ -71,12 +71,14 @@ export async function DashboardShell({
       </aside>
 
       {/* Contenu principal */}
-      <div className="lg:pl-56 pt-12">
-        {/* Bandeau de rappel en haut de page, au-dessus du header sticky. */}
-        <NextTrainingBanner />
+      <div className="lg:pl-56">
+        {/* Bandeau de rappel sticky en haut de page, aligné avec le header de la sidebar. */}
+        <div className="sticky top-0 z-30">
+          <NextTrainingBanner />
+        </div>
 
-        {/* Barre du haut collée sous le bandeau de rappel. */}
-        <div className="sticky top-0 z-20">
+        {/* Barre du haut sticky sous le bandeau. */}
+        <div className="sticky top-14 z-20">
           <header className="flex h-12 items-center justify-between gap-3 border-b border-slate-200/80 bg-white/80 px-3 backdrop-blur-md sm:h-14 sm:px-5">
             <div className="flex items-center gap-2 lg:hidden">
               <MobileNav
