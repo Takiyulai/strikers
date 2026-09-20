@@ -8,6 +8,7 @@ export function Hero() {
       <div className="absolute inset-0" aria-hidden>
         <img
           src="/images/str.jpeg"
+          alt=""
           className="h-full w-full object-cover opacity-75"
         />
         <div className="absolute inset-0 bg-hero-overlay" />

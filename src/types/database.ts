@@ -9,6 +9,7 @@ export type UserRole =
   | "COACH"
   | "ARBITRE"
   | "TG"
+  | "ASSISTANT_TG"
   | "JOUEUR";
 
 export type PlayerStatus = "EN_ATTENTE" | "ACTIF" | "INACTIF";
@@ -157,6 +158,22 @@ export type PlayerImpact = {
   quantity: number;
   note: string | null;
   recorded_by: string | null;
+  created_at: string;
+};
+
+export type LateArrivalStatus = "EN_RETARD" | "PAYE";
+
+export type LateArrival = {
+  id: string;
+  week_id: string;
+  player_id: string;
+  amount: number;
+  note: string | null;
+  status: LateArrivalStatus;
+  noted_by: string | null;
+  noted_at: string;
+  cleared_by: string | null;
+  cleared_at: string | null;
   created_at: string;
 };
 

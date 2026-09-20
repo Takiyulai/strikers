@@ -12,6 +12,7 @@ import type {
   Equipment,
   Expense,
   FinancialLedgerEntry,
+  LateArrival,
   Match,
   MatchConvocation,
   Player,
@@ -56,6 +57,7 @@ export type Database = {
       matches: Table<Match>;
       match_convocations: Table<MatchConvocation>;
       player_impacts: Table<PlayerImpact>;
+      late_arrivals: Table<LateArrival>;
       equipment: Table<Equipment>;
     };
     Views: {
@@ -85,6 +87,7 @@ export type Database = {
       convocation_role: string;
       special_contribution_status: string;
       impact_type: string;
+      late_arrival_status: string;
     };
     CompositeTypes: Record<string, never>;
   };

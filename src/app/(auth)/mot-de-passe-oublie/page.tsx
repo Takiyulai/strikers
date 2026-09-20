@@ -36,60 +36,50 @@ export default function MotDePasseOubliePage() {
   }
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-6">
-        <h1 className="text-2xl font-black text-club-navy-900">
+    <div className="space-y-5 text-center">
+      <div className="space-y-1.5">
+        <span className="mx-auto mb-2 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-pitch-gradient text-base font-black text-white shadow-md">
+          S
+        </span>
+        <h1 className="text-xl font-black text-club-navy-900">
           Mot de passe oublié
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Entrez votre adresse e-mail : vous recevrez un lien de
-          réinitialisation.
+        <p className="text-xs text-slate-500">
+          Recevez un lien de réinitialisation par e-mail.
         </p>
       </div>
 
       {sent ? (
-        <div className="space-y-4">
-          <p className="rounded-xl bg-club-green-50 px-4 py-3 text-sm text-club-green-700">
-            Si un compte existe pour {email}, un e-mail avec un lien de
-            réinitialisation vient d&apos;être envoyé. Pensez à vérifier vos
-            spams.
-          </p>
-          <Link href="/login" className="btn-primary w-full">
-            Retour à la connexion
-          </Link>
-        </div>
+        <p className="rounded-lg bg-club-green-50 px-3 py-2 text-xs text-club-green-800">
+          Un email a été envoyé à <span className="font-semibold">{email}</span>.
+        </p>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 text-left">
           <Input
             label="Adresse e-mail"
             type="email"
-            autoComplete="email"
-            required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="vous@exemple.com"
+            onChange={(event) => setEmail(event.target.value)}
+            required
+            autoComplete="email"
+            placeholder="vous@strikerfc.com"
           />
-
           {error ? (
-            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
               {error}
             </p>
           ) : null}
-
-          <Button type="submit" loading={loading} className="w-full" size="lg">
-            Envoyer le lien
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Envoi…" : "Recevoir le lien"}
           </Button>
-
-          <p className="text-center text-sm text-slate-500">
-            <Link
-              href="/login"
-              className="font-semibold text-club-sky-600 hover:underline"
-            >
-              Retour à la connexion
-            </Link>
-          </p>
         </form>
       )}
+
+      <p className="text-center text-xs text-slate-400">
+        <Link href="/login" className="hover:text-slate-600">
+          Retour à la connexion
+        </Link>
+      </p>
     </div>
   );
 }

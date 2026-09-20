@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ClockAlert,
   CreditCard,
   Dumbbell,
   HandCoins,
@@ -21,6 +22,7 @@ const ICONS: Record<string, LucideIcon> = {
   CreditCard,
   Receipt,
   HandCoins,
+  ClockAlert,
   Dumbbell,
   Trophy,
   Package,

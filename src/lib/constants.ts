@@ -15,6 +15,8 @@ import type {
 /** Cotisation hebdomadaire obligatoire, en FCFA. */
 export const WEEKLY_AMOUNT = 100;
 
+export const LATE_AMOUNT = 300;
+
 /** Montants proposés pour les cotisations exceptionnelles. */
 export const SPECIAL_AMOUNTS = [500, 1000, 2000, 5000] as const;
 
@@ -38,6 +40,7 @@ export const USER_ROLES: UserRole[] = [
   "COACH",
   "ARBITRE",
   "TG",
+  "ASSISTANT_TG",
   "JOUEUR",
 ];
 

@@ -62,14 +62,18 @@ export default function ReinitialisationPage() {
 
   if (!hasSession) {
     return (
-      <div className="animate-fade-in space-y-4">
-        <h1 className="text-2xl font-black text-club-navy-900">
-          Lien expiré ou invalide
-        </h1>
-        <p className="text-sm text-slate-500">
-          Ce lien de réinitialisation est invalide ou a déjà été utilisé.
-          Demandez-en un nouveau pour choisir un nouveau mot de passe.
-        </p>
+      <div className="space-y-4 text-center">
+        <div className="space-y-1.5">
+          <span className="mx-auto mb-2 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-pitch-gradient text-base font-black text-white shadow-md">
+            S
+          </span>
+          <h1 className="text-xl font-black text-club-navy-900">
+            Lien expiré
+          </h1>
+          <p className="text-xs text-slate-500">
+            Demandez un nouveau lien pour réinitialiser votre mot de passe.
+          </p>
+        </div>
         <Link href="/mot-de-passe-oublie" className="btn-primary w-full">
           Demander un nouveau lien
         </Link>
@@ -78,17 +82,20 @@ export default function ReinitialisationPage() {
   }
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-6">
-        <h1 className="text-2xl font-black text-club-navy-900">
+    <div className="space-y-5 text-center">
+      <div className="space-y-1.5">
+        <span className="mx-auto mb-2 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-pitch-gradient text-base font-black text-white shadow-md">
+          S
+        </span>
+        <h1 className="text-xl font-black text-club-navy-900">
           Nouveau mot de passe
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Choisissez un nouveau mot de passe pour votre compte.
+        <p className="text-xs text-slate-500">
+          Choisissez un mot de passe d&apos;au moins 6 caractères.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3 text-left">
         <Input
           label="Nouveau mot de passe"
           type="password"
@@ -112,12 +119,12 @@ export default function ReinitialisationPage() {
         />
 
         {error ? (
-          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
             {error}
           </p>
         ) : null}
 
-        <Button type="submit" loading={loading} className="w-full" size="lg">
+        <Button type="submit" loading={loading} className="w-full">
           Enregistrer le mot de passe
         </Button>
       </form>

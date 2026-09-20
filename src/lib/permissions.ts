@@ -5,6 +5,7 @@ export const ROLE_HIERARCHY: Record<UserRole, number> = {
   PRESIDENT: 90,
   VICE_PRESIDENT: 80,
   TG: 70,
+  ASSISTANT_TG: 65,
   COACH: 60,
   ARBITRE: 50,
   JOUEUR: 10,
@@ -19,7 +20,8 @@ export type Permission =
   | "contribution.create"
   | "sport.manage"
   | "players.manage"
-  | "equipment.manage";
+  | "equipment.manage"
+  | "attendance.mark_late";
 
 const PERMISSIONS_BY_ROLE: Record<UserRole, Permission[]> = {
   PRESIDENT_HONNEUR: [
@@ -58,6 +60,7 @@ const PERMISSIONS_BY_ROLE: Record<UserRole, Permission[]> = {
     "finance.manage",
     "contribution.create",
   ],
+  ASSISTANT_TG: ["attendance.mark_late"],
   COACH: ["sport.manage", "players.manage"],
   ARBITRE: ["sport.manage"],
   JOUEUR: [],
@@ -93,6 +96,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Cotis. spéciales",
     icon: "HandCoins",
     permission: "contribution.view",
+  },
+  {
+    href: "/retards",
+    label: "Retards",
+    icon: "ClockAlert",
+    permission: "attendance.mark_late",
   },
   {
     href: "/paiements",

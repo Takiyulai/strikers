@@ -13,7 +13,7 @@ import type {
   WeeklyRosterRow,
   WeekSummary,
 } from "@/types";
-import type { WeeklyWeek } from "@/types/database";
+import type { LateArrival, WeeklyWeek } from "@/types/database";
 
 type SupabaseLike = ReturnType<typeof createClient>;
 
@@ -432,4 +432,141 @@ export async function fetchPlayerOfMonth(
   }
 
   return best;
+}
+
+/** Retards de la semaine en cours, avec nom du joueur et du staff. */
+export async function fetchLateArrivalsThisWeek(
+  supabase: SupabaseLike,
+  weekId: string,
+): Promise<
+  Array<
+    LateArrival & {
+      player_name: string;
+      player_jersey: number | null;
+      noted_by_name: string | null;
+      cleared_by_name: string | null;
+    }
+  >
+> {
+  const [{ data: rows }, { data: players }, { data: profiles }] =
+    await Promise.all([
+      supabase
+        .from("late_arrivals")
+        .select("*")
+        .eq("week_id", weekId)
+        .order("noted_at", { ascending: false }),
+      supabase.from("v_players").select("id, full_name, jersey_number"),
+      supabase.from("profiles").select("id, full_name"),
+    ]);
+
+  const playerMap = new Map(
+    (players ?? []).map((player) => [player.id, player]),
+  );
+  const profileMap = new Map(
+    (profiles ?? []).map((profile) => [profile.id, profile]),
+  );
+
+  return (rows ?? []).map((row) => ({
+    ...row,
+    player_name: playerMap.get(row.player_id)?.full_name ?? "Joueur",
+    player_jersey: playerMap.get(row.player_id)?.jersey_number ?? null,
+    noted_by_name: row.noted_by
+      ? profileMap.get(row.noted_by)?.full_name ?? null
+      : null,
+    cleared_by_name: row.cleared_by
+      ? profileMap.get(row.cleared_by)?.full_name ?? null
+      : null,
+  }));
+}
+
+/**
+ * Indicateurs financiers agrégés pour la vue d'ensemble du Président
+ * d'honneur (et de toute la direction).
+ */
+export async function fetchFinancialOverview(supabase: SupabaseLike): Promise<{
+  balance: number;
+  income: number;
+  expense: number;
+  weeklyCollected: number;
+  weeklyExpected: number;
+  weeklyPaidCount: number;
+  weeklyActivePlayers: number;
+  pendingLateAmount: number;
+  pendingLateCount: number;
+  specialCollected: number;
+  specialPending: number;
+}> {
+  const [
+    { data: balance },
+    { data: ledger },
+    { data: expenses },
+    { data: weeks },
+    roster,
+    { data: lates },
+    specials,
+  ] = await Promise.all([
+    supabase.from("v_balance").select("*").maybeSingle(),
+    supabase
+      .from("v_financial_ledger")
+      .select("entry_type, amount"),
+    supabase.from("expenses").select("amount"),
+    supabase
+      .from("weekly_weeks")
+      .select("id, week_start, week_end")
+      .order("week_start", { ascending: false })
+      .limit(1),
+    fetchPlayers(supabase, { onlyActive: true }),
+    supabase
+      .from("late_arrivals")
+      .select("amount, status")
+      .eq("status", "EN_RETARD"),
+    fetchSpecialContributions(supabase).catch(() => []),
+  ]);
+
+  const week = weeks?.[0] ?? null;
+
+  const income = (ledger ?? [])
+    .filter((row) => row.entry_type === "INCOME")
+    .reduce((sum, row) => sum + (row.amount ?? 0), 0);
+
+  const weeklyExpected = roster.length * 100;
+  const weeklyCollected = week
+    ? await supabase
+        .from("weekly_payments")
+        .select("amount", { count: "exact" })
+        .eq("week_id", week.id)
+        .then(({ data }) =>
+          (data ?? []).reduce((sum, row) => sum + (row.amount ?? 0), 0),
+        )
+    : 0;
+  const weeklyPaidCount = week
+    ? (await supabase
+        .from("weekly_payments")
+        .select("player_id", { count: "exact", head: true })
+        .eq("week_id", week.id)).count ?? 0
+    : 0;
+
+  return {
+    balance: balance?.balance ?? 0,
+    income,
+    expense: (expenses ?? []).reduce((sum, row) => sum + (row.amount ?? 0), 0),
+    weeklyCollected,
+    weeklyExpected,
+    weeklyPaidCount,
+    weeklyActivePlayers: roster.length,
+    pendingLateAmount: (lates ?? []).reduce(
+      (sum, row) => sum + (row.amount ?? 0),
+      0,
+    ),
+    pendingLateCount: (lates ?? []).length,
+    specialCollected: specials.reduce(
+      (sum, item) => sum + item.collected,
+      0,
+    ),
+    specialPending: specials.reduce(
+      (sum, item) =>
+        sum + (item.expectedCount - item.paidCount) * item.contribution.amount,
+      0,
+    ),
+  };
 }

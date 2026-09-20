@@ -13,6 +13,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   COACH: "Coach",
   ARBITRE: "Arbitre",
   TG: "Trésorier Général",
+  ASSISTANT_TG: "Assistant Trésorier",
   JOUEUR: "Joueur",
 };
 
@@ -23,16 +24,23 @@ export const ROLE_BADGE_CLASSES: Record<UserRole, string> = {
   COACH: "bg-club-green-100 text-club-green-800",
   ARBITRE: "bg-purple-100 text-purple-800",
   TG: "bg-club-sky-100 text-club-sky-800",
+  ASSISTANT_TG: "bg-cyan-100 text-cyan-800",
   JOUEUR: "bg-slate-100 text-slate-700",
 };
 
-export const STAFF_ROLES: UserRole[] = [
+/** Rôles affichés sur la page d'accueil (rôle interne exclu). */
+export const PUBLIC_STAFF_ROLES: UserRole[] = [
   "PRESIDENT_HONNEUR",
   "PRESIDENT",
   "VICE_PRESIDENT",
   "COACH",
   "ARBITRE",
   "TG",
+];
+
+export const STAFF_ROLES: UserRole[] = [
+  ...PUBLIC_STAFF_ROLES,
+  "ASSISTANT_TG",
 ];
 
 export interface SessionUser {
