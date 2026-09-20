@@ -60,7 +60,11 @@ const PERMISSIONS_BY_ROLE: Record<UserRole, Permission[]> = {
     "finance.manage",
     "contribution.create",
   ],
-  ASSISTANT_TG: ["attendance.mark_late"],
+  ASSISTANT_TG: [
+    "attendance.mark_late",
+    "finance.view",
+    "contribution.view",
+  ],
   COACH: ["sport.manage", "players.manage"],
   ARBITRE: ["sport.manage"],
   JOUEUR: [],

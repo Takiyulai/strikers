@@ -108,8 +108,11 @@ export function LateArrivalsManager({
     setError(null);
     startTransition(async () => {
       const result = await settleLateFine(weekId, playerId);
-      if (result.ok) router.refresh();
-      else setError(result.error);
+      if (result.ok) {
+        router.refresh();
+      } else {
+        setError(result.error);
+      }
     });
   }
 

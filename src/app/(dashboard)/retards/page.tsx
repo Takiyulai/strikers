@@ -85,7 +85,7 @@ export default async function RetardsPage() {
         }))}
         lateArrivals={lateArrivals}
         canMark={true}
-        canSettle={hasPermission(user.role, "finance.manage") || true}
+        canSettle={hasPermission(user.role, "attendance.mark_late")}
       />
     </DashboardShell>
   );

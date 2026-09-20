@@ -71,9 +71,11 @@ export async function DashboardShell({
       </aside>
 
       {/* Contenu principal */}
-      <div className="lg:pl-56">
-        {/* Barre du haut et bandeau « prochaine séance » collés ensemble : le
-            rappel et son minuteur restent visibles pendant le défilement. */}
+      <div className="lg:pl-56 pt-12">
+        {/* Bandeau de rappel en haut de page, au-dessus du header sticky. */}
+        <NextTrainingBanner />
+
+        {/* Barre du haut collée sous le bandeau de rappel. */}
         <div className="sticky top-0 z-20">
           <header className="flex h-12 items-center justify-between gap-3 border-b border-slate-200/80 bg-white/80 px-3 backdrop-blur-md sm:h-14 sm:px-5">
             <div className="flex items-center gap-2 lg:hidden">
@@ -92,8 +94,6 @@ export async function DashboardShell({
             </div>
             <div className="flex items-center gap-2">{action}</div>
           </header>
-
-          <NextTrainingBanner />
         </div>
 
         <div className="border-b border-slate-200/60 bg-white px-3 py-3 lg:hidden">
