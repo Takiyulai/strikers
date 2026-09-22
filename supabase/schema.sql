@@ -118,7 +118,7 @@ end$$;
 -- ---------------------------------------------------------------------------
 create type public.user_role as enum (
   'PRESIDENT_HONNEUR', 'PRESIDENT', 'VICE_PRESIDENT',
-  'COACH', 'ARBITRE', 'TG', 'JOUEUR'
+  'COACH', 'ARBITRE', 'TG', 'ASSISTANT_TG', 'JOUEUR'
 );
 
 create type public.player_status as enum ('EN_ATTENTE', 'ACTIF', 'INACTIF');
@@ -419,7 +419,7 @@ security definer
 set search_path = public
 as $$
   select coalesce(
-    (select role in ('PRESIDENT_HONNEUR', 'PRESIDENT', 'VICE_PRESIDENT', 'TG')
+    (select role in ('PRESIDENT_HONNEUR', 'PRESIDENT', 'VICE_PRESIDENT', 'TG', 'ASSISTANT_TG')
      from public.profiles where id = auth.uid()),
     false
   );
@@ -733,6 +733,8 @@ grant execute on function public.current_role(),
 -- ---------------------------------------------------------------------------
 -- 9. RATTRAPAGE DES COMPTES DÉJÀ INSCRITS
 --    (profils et fiches joueurs créés avant l'installation du trigger)
+--    IMPORTANT : on ne force PAS le rôle à JOUEUR si un profil existe déjà
+--    avec un autre rôle (PRESIDENT_HONNEUR, TG, etc.).
 -- ---------------------------------------------------------------------------
 insert into public.profiles (id, email, full_name, phone, role)
 select
@@ -740,9 +742,15 @@ select
   coalesce(u.email, ''),
   coalesce(u.raw_user_meta_data ->> 'full_name', ''),
   u.raw_user_meta_data ->> 'phone',
-  'JOUEUR'
+  coalesce(
+    (select p.role from public.profiles p where p.id = u.id),
+    'JOUEUR'::public.user_role
+  )
 from auth.users u
-on conflict (id) do nothing;
+on conflict (id) do update set
+  email       = excluded.email,
+  full_name   = excluded.full_name,
+  phone       = coalesce(excluded.phone, public.profiles.phone);
 
 insert into public.players (profile_id, status)
 select p.id, 'ACTIF'

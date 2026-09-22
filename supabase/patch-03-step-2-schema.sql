@@ -35,12 +35,14 @@ drop policy if exists late_select on public.late_arrivals;
 create policy late_select on public.late_arrivals
   for select to authenticated using (true);
 
+-- TG et direction : toutes les opérations sur les retards.
 drop policy if exists late_write on public.late_arrivals;
 create policy late_write on public.late_arrivals
   for all to authenticated
   using (public.can_manage_finance())
   with check (public.can_manage_finance());
 
+-- L'Assistant TG peut marquer un retard (insert).
 drop policy if exists late_insert_assistant on public.late_arrivals;
 create policy late_insert_assistant on public.late_arrivals
   for insert to authenticated
@@ -48,6 +50,13 @@ create policy late_insert_assistant on public.late_arrivals
     public.can_manage_finance()
     or public.current_role() = 'ASSISTANT_TG'
   );
+
+-- L'Assistant TG peut mettre à jour le statut (EN_RETARD -> PAYE).
+drop policy if exists late_update_assistant on public.late_arrivals;
+create policy late_update_assistant on public.late_arrivals
+  for update to authenticated
+  using (public.can_manage_finance() or public.current_role() = 'ASSISTANT_TG')
+  with check (public.can_manage_finance() or public.current_role() = 'ASSISTANT_TG');
 
 -- 3. Vue v_weekly_debts : la dette inclut désormais les retards non payés.
 create or replace view public.v_weekly_debts as

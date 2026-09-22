@@ -65,14 +65,15 @@ create policy late_select on public.late_arrivals
 drop policy if exists late_write on public.late_arrivals;
 create policy late_write on public.late_arrivals
   for all to authenticated
-  using (
-    public.can_manage_finance()
-    or public.current_role() = 'ASSISTANT_TG'
-  )
-  with check (
-    public.can_manage_finance()
-    or (public.current_role() = 'ASSISTANT_TG' and status = 'PAYE')
-  );
+  using (public.can_manage_finance())
+  with check (public.can_manage_finance());
+
+-- L'Assistant TG peut mettre à jour le statut (EN_RETARD -> PAYE).
+drop policy if exists late_update_assistant on public.late_arrivals;
+create policy late_update_assistant on public.late_arrivals
+  for update to authenticated
+  using (public.current_role() = 'ASSISTANT_TG')
+  with check (public.current_role() = 'ASSISTANT_TG');
 
 -- Insertion : ouvert aussi à l'Assistant TG (rôle dédié).
 drop policy if exists late_insert_assistant on public.late_arrivals;
