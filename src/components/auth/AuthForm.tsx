@@ -66,9 +66,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {!isRegister && searchParams.get("registered") === "1" ? (
-        <p className="rounded-xl bg-club-green-50 px-3 py-2 text-sm text-club-green-700">
+        <p className="rounded-xl border border-club-green-200 bg-club-green-50 px-3.5 py-3 text-sm font-medium text-club-green-700">
           Compte créé avec succès ! Connectez-vous avec vos identifiants.
         </p>
       ) : null}
@@ -118,7 +118,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       />
 
       {error ? (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-xl border border-red-100 bg-red-50 px-3.5 py-3 text-sm text-red-700">
           {error}
         </p>
       ) : null}
@@ -131,25 +131,25 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         <p className="text-center">
           <Link
             href="/mot-de-passe-oublie"
-            className="text-sm font-medium text-club-sky-600 hover:underline"
+            className="text-xs font-bold text-club-sky-600 hover:text-club-sky-700"
           >
             Mot de passe oublié ?
           </Link>
         </p>
       ) : null}
 
-      <p className="text-center text-sm text-slate-500">
+      <p className="border-t border-slate-100 pt-5 text-center text-sm text-slate-500">
         {isRegister ? (
           <>
             Déjà un compte ?{" "}
-            <Link href="/login" className="font-semibold text-club-sky-600">
+            <Link href="/login" className="font-bold text-club-sky-600 hover:text-club-sky-700">
               Se connecter
             </Link>
           </>
         ) : (
           <>
             Pas encore de compte ?{" "}
-            <Link href="/register" className="font-semibold text-club-sky-600">
+            <Link href="/register" className="font-bold text-club-sky-600 hover:text-club-sky-700">
               S&apos;inscrire
             </Link>
           </>

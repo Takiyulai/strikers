@@ -25,39 +25,37 @@ const VALUES = [
 
 export function ValuesSection() {
   return (
-    <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-      <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-club-sky-600">
+    <section id="valeurs" className="relative overflow-hidden bg-white px-5 py-24 sm:px-8 sm:py-28">
+      <div className="absolute -right-32 top-12 h-80 w-80 rounded-full bg-club-sky-100/60 blur-3xl" aria-hidden />
+      <div className="relative mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:gap-20">
+        <div className="max-w-lg">
+          <p className="eyebrow">
             Notre objectif
           </p>
-          <h2 className="mt-2 text-3xl font-black text-club-navy-900 sm:text-4xl">
-            Un collectif, une ambition
+          <h2 className="mt-4 text-4xl font-black leading-tight tracking-[-0.04em] text-club-navy-950 sm:text-5xl">
+            Les valeurs qui nous font avancer.
           </h2>
-          <p className="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
+          <p className="mt-6 text-base leading-7 text-slate-600">
             Striker FC est bien plus qu&apos;une équipe de football : c&apos;est
             une famille soudée par la passion du ballon rond. Chaque
             entraînement, chaque match est une occasion de grandir ensemble.
           </p>
-          <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-            Notre vision repose sur quatre piliers qui guident chacun de nos
-            choix, du vestiaire au terrain.
-          </p>
+          <div className="mt-8 h-1 w-20 rounded-full bg-gradient-to-r from-club-sky-500 to-club-green-400" />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {VALUES.map((value) => (
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+          {VALUES.map((value, index) => (
             <div
               key={value.title}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card transition-shadow hover:shadow-card-hover"
+              className={`group rounded-3xl border border-slate-200/70 bg-white p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-club-sky-200 hover:shadow-card-hover ${index % 2 ? "sm:translate-y-7 sm:hover:translate-y-6" : ""}`}
             >
-              <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-club-green-50 text-club-green-600">
-                <value.icon className="h-5 w-5" />
+              <span className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-club-navy-950 text-club-sky-300 transition-colors group-hover:bg-club-sky-500 group-hover:text-white">
+                <value.icon className="h-5 w-5" strokeWidth={2.2} />
               </span>
-              <h3 className="text-sm font-bold text-club-navy-900">
+              <h3 className="text-lg font-extrabold text-club-navy-950">
                 {value.title}
               </h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-slate-500 sm:text-sm">
+              <p className="mt-2 text-sm leading-6 text-slate-500">
                 {value.text}
               </p>
             </div>

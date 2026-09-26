@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
+  --background: #f6f8fb;
   --foreground: #0f1a2e;
 }
 
@@ -23,6 +23,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+::selection {
+  background: rgb(14 165 233 / 0.22);
+  color: #080f1d;
+}
+
 @layer base {
   h1,
   h2,
@@ -34,7 +39,7 @@ body {
 
 @layer components {
   .card {
-    @apply rounded-xl border border-slate-200/80 bg-white shadow-card;
+    @apply rounded-2xl border border-slate-200/70 bg-white shadow-card;
   }
 
   .card-padded {
@@ -42,13 +47,13 @@ body {
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold
-      transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-club-sky-500
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-sm font-bold
+      transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-club-sky-500
       focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .btn-primary {
-    @apply btn bg-club-sky-600 text-white hover:bg-club-sky-700 active:bg-club-sky-800;
+    @apply btn bg-club-sky-600 text-white shadow-lg shadow-club-sky-600/20 hover:-translate-y-0.5 hover:bg-club-sky-500 active:translate-y-0 active:bg-club-sky-700;
   }
 
   .btn-secondary {
@@ -68,9 +73,9 @@ body {
   }
 
   .input {
-    @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-club-navy-900
+    @apply w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-club-navy-900
       placeholder:text-slate-400 focus:border-club-sky-500 focus:outline-none focus:ring-2
-      focus:ring-club-sky-500/30;
+      focus:bg-white focus:ring-club-sky-500/20;
   }
 
   .label {
@@ -82,7 +87,7 @@ body {
   }
 
   .section-title {
-    @apply text-sm font-bold text-club-navy-900 sm:text-base;
+    @apply text-base font-extrabold tracking-tight text-club-navy-900 sm:text-lg;
   }
 }
 
@@ -93,6 +98,16 @@ body {
 
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-extrabold uppercase tracking-[0.22em] text-club-sky-600;
+  }
+
+  .surface-grid {
+    background-image: linear-gradient(rgb(148 163 184 / 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(148 163 184 / 0.08) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
 }
 

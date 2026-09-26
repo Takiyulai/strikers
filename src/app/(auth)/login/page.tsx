@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 
@@ -8,33 +7,15 @@ export const metadata: Metadata = { title: "Connexion — Striker FC" };
 
 export default function LoginPage() {
   return (
-    <div className="space-y-5 text-center">
-      <div className="space-y-1.5">
-        <span className="mx-auto mb-2 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-pitch-gradient text-base font-black text-white shadow-md">
-          S
-        </span>
-        <h1 className="text-xl font-black text-club-navy-900">Connexion</h1>
-        <p className="text-xs text-slate-500">
-          Accédez à votre espace Striker FC.
-        </p>
+    <div className="space-y-7">
+      <div>
+        <span className="eyebrow">Espace membre</span>
+        <h1 className="mt-3 text-3xl font-black tracking-[-0.035em] text-club-navy-950">Heureux de vous revoir.</h1>
+        <p className="mt-2 text-sm leading-6 text-slate-500">Connectez-vous pour accéder à votre espace Striker FC.</p>
       </div>
       <Suspense fallback={null}>
         <AuthForm mode="login" />
       </Suspense>
-      <p className="text-center text-sm text-slate-500">
-        Pas encore de compte ?{" "}
-        <Link
-          href="/register"
-          className="font-semibold text-club-sky-600 hover:text-club-sky-700"
-        >
-          Inscrivez-vous
-        </Link>
-      </p>
-      <p className="text-center text-xs text-slate-400">
-        <Link href="/mot-de-passe-oublie" className="hover:text-slate-600">
-          Mot de passe oublié ?
-        </Link>
-      </p>
     </div>
   );
 }

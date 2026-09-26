@@ -56,24 +56,32 @@ const config: Config = {
         mono: ["var(--font-geist-mono)", "monospace"],
       },
       boxShadow: {
-        card: "0 1px 3px 0 rgb(15 26 46 / 0.08), 0 1px 2px -1px rgb(15 26 46 / 0.08)",
+        card: "0 1px 2px rgb(15 26 46 / 0.04), 0 10px 32px -18px rgb(15 26 46 / 0.22)",
         "card-hover":
-          "0 10px 25px -5px rgb(15 26 46 / 0.12), 0 8px 10px -6px rgb(15 26 46 / 0.08)",
+          "0 22px 48px -24px rgb(15 26 46 / 0.32), 0 8px 20px -12px rgb(14 165 233 / 0.18)",
+        glow: "0 16px 48px -18px rgb(14 165 233 / 0.6)",
       },
       backgroundImage: {
         "pitch-gradient":
-          "linear-gradient(135deg, #0f1a2e 0%, #0c4a6e 55%, #0369a1 100%)",
+          "linear-gradient(135deg, #080f1d 0%, #0c4a6e 58%, #0284c7 100%)",
         "hero-overlay":
-          "linear-gradient(180deg, rgba(8,15,29,0.85) 0%, rgba(8,15,29,0.65) 45%, rgba(8,15,29,0.92) 100%)",
+          "linear-gradient(90deg, rgba(8,15,29,0.98) 0%, rgba(8,15,29,0.9) 42%, rgba(8,15,29,0.35) 74%, rgba(8,15,29,0.58) 100%)",
+        "dashboard-glow":
+          "radial-gradient(circle at 15% 0%, rgba(14,165,233,.1), transparent 34%), radial-gradient(circle at 90% 10%, rgba(34,197,94,.06), transparent 24%)",
       },
       keyframes: {
         "fade-in": {
           "0%": { opacity: "0", transform: "translateY(8px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.4s ease-out",
+        float: "float 4s ease-in-out infinite",
       },
     },
   },

@@ -31,9 +31,9 @@ export function NextTrainingBanner() {
 
   if (now === null) {
     return (
-      <section className="border-b border-club-navy-800/40 bg-pitch-gradient text-white">
-        <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-4">
-          <p className="text-sm font-medium text-white/70">
+      <section className="h-10 border-b border-white/10 bg-club-navy-900 text-white">
+        <div className="mx-auto flex h-full max-w-7xl items-center px-4 sm:px-7">
+          <p className="text-xs font-medium text-white/60">
             Prochaine séance : chargement…
           </p>
         </div>
@@ -45,26 +45,26 @@ export function NextTrainingBanner() {
   const remaining = Math.max(next.date.getTime() - now, 0);
 
   return (
-    <section className="border-b border-club-navy-800/40 bg-pitch-gradient text-white">
-      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-4">
-        <p className="flex flex-wrap items-center gap-x-2 text-sm font-medium">
+    <section className="h-10 border-b border-white/10 bg-club-navy-900 text-white">
+      <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-7">
+        <p className="flex min-w-0 items-center gap-2 truncate text-xs font-medium text-white/65">
           <CalendarClock className="h-4 w-4 shrink-0 text-club-sky-300" />
-          <span>
+          <span className="truncate">
             Prochaine séance :{" "}
             <span className="font-bold text-white">{next.dayLabel}</span> à{" "}
             <span className="font-bold text-white">{next.timeLabel}</span>
             {next.isToday ? (
-              <span className="ml-2 inline-flex items-center rounded-full bg-club-green-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-club-green-300">
+              <span className="ml-2 inline-flex items-center rounded-full bg-club-green-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-club-green-300">
                 Aujourd&apos;hui
               </span>
             ) : null}
           </span>
         </p>
         <p
-          className="font-mono text-sm font-bold tracking-wider text-club-sky-300"
+          className="shrink-0 font-mono text-xs font-bold tracking-wider text-club-sky-300"
           aria-label="Temps restant avant la séance"
         >
-          ⏳ {formatCountdown(remaining)}
+          {formatCountdown(remaining)}
         </p>
       </div>
     </section>

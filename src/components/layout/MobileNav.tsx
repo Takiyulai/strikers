@@ -8,6 +8,7 @@ import { Home, Menu, X } from "lucide-react";
 import type { NavItem } from "@/lib/permissions";
 
 import { NavIcon } from "@/components/layout/NavIcon";
+import { DashboardNavLink } from "@/components/layout/DashboardNavLink";
 import { UserMenu } from "@/components/layout/UserMenu";
 
 export function MobileNav({
@@ -40,7 +41,7 @@ export function MobileNav({
                 onClick={() => setOpen(false)}
                 aria-hidden
               />
-              <div className="absolute inset-y-0 left-0 flex w-64 flex-col bg-club-navy-900 text-white shadow-xl">
+              <div className="absolute inset-y-0 left-0 flex w-72 flex-col bg-club-navy-950 text-white shadow-2xl">
                 <div className="flex h-14 items-center justify-between border-b border-white/10 px-4">
                   <div className="flex items-center gap-2">
                     <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-club-sky-500 text-xs font-black text-white">
@@ -71,15 +72,13 @@ export function MobileNav({
                   </Link>
                   <div className="my-1.5 border-t border-white/10" />
                   {items.map((item) => (
-                    <Link
+                    <DashboardNavLink
                       key={item.href}
                       href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-                    >
-                      <NavIcon name={item.icon} className="h-4 w-4 text-white/50" />
-                      {item.label}
-                    </Link>
+                      label={item.label}
+                      icon={item.icon}
+                      onNavigate={() => setOpen(false)}
+                    />
                   ))}
                 </nav>
 

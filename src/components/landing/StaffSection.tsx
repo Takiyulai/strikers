@@ -36,34 +36,35 @@ const STAFF = [
 
 export function StaffSection() {
   return (
-    <section className="bg-slate-50 py-16 sm:py-20">
-      <div className="mx-auto max-w-6xl px-4">
+    <section id="staff" className="bg-club-navy-950 py-24 sm:py-28">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         <div className="text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-club-sky-600">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-club-sky-400">
             Le staff
           </p>
-          <h2 className="mt-2 text-3xl font-black text-club-navy-900 sm:text-4xl">
+          <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] text-white sm:text-5xl">
             Ceux qui font avancer le club
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-600 sm:text-base">
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-white/50 sm:text-base">
             Derrière chaque match, il y a un staff engagé au quotidien — pour
             l&apos;encadrement, la discipline et la solidarité de l&apos;équipe.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {STAFF.map((member) => (
             <article
               key={member.name}
-              className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover"
+              className="group overflow-hidden rounded-3xl border border-white/10 bg-white/[0.06] transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.09]"
             >
-              <div className="aspect-[4/5] overflow-hidden bg-club-navy-100">
+              <div className="relative aspect-[4/5] overflow-hidden bg-club-navy-800">
                 <img
                   src={member.photo}
                   alt={`Portrait de ${member.name}`}
                   loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-club-navy-950/70 via-transparent to-transparent" />
               </div>
               <div className="p-5">
                 <span
@@ -71,10 +72,10 @@ export function StaffSection() {
                 >
                   {member.role}
                 </span>
-                <h3 className="mt-3 text-base font-black uppercase tracking-wide text-club-navy-900">
+                <h3 className="mt-4 text-base font-black uppercase tracking-wide text-white">
                   {member.name}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-sm leading-relaxed text-white/45">
                   {member.bio}
                 </p>
               </div>
