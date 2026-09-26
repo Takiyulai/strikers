@@ -7,7 +7,6 @@ import { Home, Menu, X } from "lucide-react";
 
 import type { NavItem } from "@/lib/permissions";
 
-import { NavIcon } from "@/components/layout/NavIcon";
 import { DashboardNavLink } from "@/components/layout/DashboardNavLink";
 import { UserMenu } from "@/components/layout/UserMenu";
 
